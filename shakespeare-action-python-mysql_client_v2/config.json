@@ -1,0 +1,478 @@
+{
+    "name": "mysql_client_v2",
+    "description": "MySQL数据库客户端v2",
+    "app_version": "2.1.0",
+    "jar": "mysql_client_v2.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/MySQL-Logo.jpg",
+    "category": "数据库",
+    "product_name": "MySQL数据库客户端",
+    "app_supplier": "雾智智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": false,
+    "test_action": "",
+    "resources": "",
+    "configuration": {
+        "host": {
+            "data_type": "string",
+            "description": "MySQL数据库主机名",
+            "default_value": "127.0.0.1",
+            "required": true,
+            "options": "",
+            "order": 0
+        },
+        "port": {
+            "data_type": "integer",
+            "description": "MySQL数据库端口",
+            "default_value": "3306",
+            "required": false,
+            "options": "",
+            "order": 1
+        },
+        "database": {
+            "data_type": "string",
+            "description": "MySQL数据库库名",
+            "default_value": "test",
+            "required": true,
+            "options": "",
+            "order": 2
+        },
+        "username": {
+            "data_type": "string",
+            "description": "MySQL数据库用户名",
+            "default_value": "root",
+            "required": true,
+            "options": "",
+            "order": 3
+        },
+        "password": {
+            "data_type": "password",
+            "description": "MySQL数据库密码",
+            "required": true,
+            "options": "",
+            "order": 4
+        },
+        "charset": {
+            "data_type": "string",
+            "description": "MySQL数据库字符集",
+            "default_value": "utf8mb4",
+            "required": false,
+            "options": "",
+            "order": 5
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "execute_sql",
+            "class_name": "execute_sql",
+            "description": "EXECUTE，执行SQL语句，并返回结果",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/execute_sql.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "sql": {
+                    "data_type": "string",
+                    "description": "SQL语句",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 0,
+                    "multi-selected": false
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.err_code",
+                    "data_type": "integer",
+                    "description": "错误码，正常为0"
+                },
+                {
+                    "data_path": "action_result.data.err_msg",
+                    "data_type": "string",
+                    "description": "错误消息"
+                },
+                {
+                    "data_path": "action_result.data.row_count",
+                    "data_type": "integer",
+                    "description": "总行数，默认：0"
+                },
+                {
+                    "data_path": "action_result.data.rows",
+                    "data_type": "jsonarray",
+                    "description": "返回数据记录行，数组"
+                },
+                {
+                    "data_path": "action_result.data.column_names",
+                    "data_type": "jsonarray",
+                    "description": "返回数据的列名，数组"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "insert_data_with_columns",
+            "class_name": "insert_data_with_columns",
+            "description": "INSERT，插入数据（给定列名和值）",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/insert_data_with_colums.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "enable_insert_ignore": {
+                    "data_type": "boolean",
+                    "description": "是否启用INSERT IGNORE，默认：否",
+                    "default_value": false,
+                    "options": "",
+                    "required": false,
+                    "order": 0
+                },
+                "table_name": {
+                    "data_type": "string",
+                    "description": "数据库表名",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 1,
+                    "multi-selected": false
+                },
+                "column_names_with_comma": {
+                    "data_type": "string",
+                    "description": "英文逗号连接的列名，如：id,title,name",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 2,
+                    "multi-selected": false
+                },
+                "value_for_column_1": {
+                    "data_type": "string",
+                    "description": "第一列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 3,
+                    "multi-selected": false
+                },
+                "value_for_column_2": {
+                    "data_type": "string",
+                    "description": "第二列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 4,
+                    "multi-selected": false
+                },
+                "value_for_column_3": {
+                    "data_type": "string",
+                    "description": "第三列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 5,
+                    "multi-selected": false
+                },
+                "value_for_column_4": {
+                    "data_type": "string",
+                    "description": "第四列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 6,
+                    "multi-selected": false
+                },
+                "value_for_column_5": {
+                    "data_type": "string",
+                    "description": "第五列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 7,
+                    "multi-selected": false
+                },
+                "value_for_column_6": {
+                    "data_type": "string",
+                    "description": "第六列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 8,
+                    "multi-selected": false
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.err_code",
+                    "data_type": "integer",
+                    "description": "返回.错误码，默认：0"
+                },
+                {
+                    "data_path": "action_result.data.err_msg",
+                    "data_type": "string",
+                    "description": "返回.错误消息，默认：空"
+                },
+                {
+                    "data_path": "action_result.data.row_count",
+                    "data_type": "integer",
+                    "description": "返回.受影响行数"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "replace_data_with_columns",
+            "class_name": "replace_data_with_columns",
+            "description": "REPLACE，插入数据（给定列名和值），如果存在唯一ID则替换，不存在则插入",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/replace_data_with_columns.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "table_name": {
+                    "data_type": "string",
+                    "description": "数据库表名",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 1,
+                    "multi-selected": false
+                },
+                "column_names_with_comma": {
+                    "data_type": "string",
+                    "description": "英文逗号连接的列名，如：id,title,name",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 2,
+                    "multi-selected": false
+                },
+                "value_for_column_1": {
+                    "data_type": "string",
+                    "description": "第一列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 3,
+                    "multi-selected": false
+                },
+                "value_for_column_2": {
+                    "data_type": "string",
+                    "description": "第二列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 4,
+                    "multi-selected": false
+                },
+                "value_for_column_3": {
+                    "data_type": "string",
+                    "description": "第三列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 5,
+                    "multi-selected": false
+                },
+                "value_for_column_4": {
+                    "data_type": "string",
+                    "description": "第四列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 6,
+                    "multi-selected": false
+                },
+                "value_for_column_5": {
+                    "data_type": "string",
+                    "description": "第五列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 7,
+                    "multi-selected": false
+                },
+                "value_for_column_6": {
+                    "data_type": "string",
+                    "description": "第六列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 8,
+                    "multi-selected": false
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.err_code",
+                    "data_type": "integer",
+                    "description": "返回.错误码，默认：0"
+                },
+                {
+                    "data_path": "action_result.data.err_msg",
+                    "data_type": "string",
+                    "description": "返回.错误消息，默认：空"
+                },
+                {
+                    "data_path": "action_result.data.row_count",
+                    "data_type": "integer",
+                    "description": "返回.受影响行数"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "update_data_with_columns",
+            "class_name": "update_data_with_columns",
+            "description": "UPDATE，更新数据（给定列名和值）",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/update_data_with_columns.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "table_name": {
+                    "data_type": "string",
+                    "description": "数据库表名",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 0,
+                    "multi-selected": false
+                },
+                "column_names_with_comma": {
+                    "data_type": "string",
+                    "description": "英文逗号连接的列名，如：id,title,name",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 1,
+                    "multi-selected": false
+                },
+                "where_condition": {
+                    "data_type": "string",
+                    "description": "WHERE条件，如：id=1",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 2,
+                    "multi-selected": false
+                },
+                "value_for_column_1": {
+                    "data_type": "string",
+                    "description": "第一列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 3,
+                    "multi-selected": false
+                },
+                "value_for_column_2": {
+                    "data_type": "string",
+                    "description": "第二列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 4,
+                    "multi-selected": false
+                },
+                "value_for_column_3": {
+                    "data_type": "string",
+                    "description": "第三列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 5,
+                    "multi-selected": false
+                },
+                "value_for_column_4": {
+                    "data_type": "string",
+                    "description": "第四列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 6,
+                    "multi-selected": false
+                },
+                "value_for_column_5": {
+                    "data_type": "string",
+                    "description": "第五列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 7,
+                    "multi-selected": false
+                },
+                "value_for_column_6": {
+                    "data_type": "string",
+                    "description": "第六列的内容，如有的话",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 8,
+                    "multi-selected": false
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.err_code",
+                    "data_type": "integer",
+                    "description": "返回.错误码，默认：0"
+                },
+                {
+                    "data_path": "action_result.data.err_msg",
+                    "data_type": "string",
+                    "description": "返回.错误消息，默认：空"
+                },
+                {
+                    "data_path": "action_result.data.row_count",
+                    "data_type": "integer",
+                    "description": "返回.受影响行数"
+                }
+            ]
+        },
+        {   "order": 8,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "Health Check，健康检查",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "order": 0,
+                    "data_path": "action_result.data.err_code",
+                    "data_type": "integer",
+                    "description": "返回.错误码，默认：0"
+                    
+                },
+                {
+                    "order": 1,
+                    "data_path": "action_result.data.err_msg",
+                    "data_type": "string",
+                    "description": "返回.错误消息，默认：空"
+                },
+                {
+                    "order": 2,
+                    "data_path": "action_result.summary.statusCode",
+                    "data_type": "string",
+                    "description": "健康检查状态码，默认：200"
+                },
+                {
+                    "order": 3,
+                    "data_path": "action_result.summary.msg",
+                    "data_type": "string",
+                    "description": "健康检查信息，默认：空"
+                }
+            ]
+        }
+    ]
+}
