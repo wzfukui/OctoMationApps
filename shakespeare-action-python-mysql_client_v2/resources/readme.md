@@ -23,14 +23,14 @@ MySQL客户端工具2.0主要功能如下：
 
 ## 数据库资源配置信息
 
-#markdown生成表格，格式如下：字段名、类型、默认值，是否必填，说明
 
 | 字段名 | 类型 | 默认值 | 是否必填 | 说明 |
+| --- | --- | --- | --- | --- |
 | host | string | 127.0.0.1 | 是 | MySQL数据库地址 |
-| port | int | 3306 | 是 | MySQL数据库端口 |
+| port | int | 3306 | 否 | MySQL数据库端口 |
 | database | string |  | 是 | MySQL数据库名称 | 
-| user | string | root | 是 | MySQL数据库用户名 |
-| password | string |  | 是 | MySQL数据库密码 |
+| user | string | root | 否 | MySQL数据库用户名 |
+| password | password |  | 是 | MySQL数据库密码 |
 | charset | string | utf8mb4 | 否 | MySQL数据库字符集 |
 
 ## 应用动作及数据示例
