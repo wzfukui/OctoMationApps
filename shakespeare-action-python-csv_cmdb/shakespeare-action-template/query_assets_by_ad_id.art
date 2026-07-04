@@ -1,0 +1,47 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            {{each action_results action_result}}
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">查询字段</span></div></span></th>
+                        <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">值</span></div></span></th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    <tr class="ant-table-row"><td>是否匹配</td><td>{{action_result.data.matched}}</td></tr>
+                    <tr class="ant-table-row"><td>AD 账号</td><td>{{action_result.data.ad_account}}</td></tr>
+                    <tr class="ant-table-row"><td>资产数量</td><td>{{action_result.data.count}}</td></tr>
+                    <tr class="ant-table-row"><td>负责人</td><td>{{action_result.data.owner.owner_name}}</td></tr>
+                    <tr class="ant-table-row"><td>邮箱</td><td>{{action_result.data.owner.email}}</td></tr>
+                    <tr class="ant-table-row"><td>电话</td><td>{{action_result.data.owner.mobile}}</td></tr>
+                </tbody>
+            </table>
+            <br/>
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th>IP</th>
+                        <th>主机名</th>
+                        <th>资产类型</th>
+                        <th>位置</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    {{each action_result.data.assets asset}}
+                    <tr class="ant-table-row">
+                        <td>{{asset.ip}}</td>
+                        <td>{{asset.hostname}}</td>
+                        <td>{{asset.asset_type}}</td>
+                        <td>{{asset.location}}</td>
+                        <td>{{asset.status}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{/each}}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">字段</span></div></span></th>
+                        <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">值</span></div></span></th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    {{each action_results action_result}}
+                    <tr class="ant-table-row"><td>是否匹配</td><td>{{action_result.data.matched}}</td></tr>
+                    <tr class="ant-table-row"><td>IP</td><td>{{action_result.data.ip}}</td></tr>
+                    <tr class="ant-table-row"><td>负责人</td><td>{{action_result.data.owner_name}}</td></tr>
+                    <tr class="ant-table-row"><td>AD 账号</td><td>{{action_result.data.ad_account}}</td></tr>
+                    <tr class="ant-table-row"><td>邮箱</td><td>{{action_result.data.email}}</td></tr>
+                    <tr class="ant-table-row"><td>电话</td><td>{{action_result.data.mobile}}</td></tr>
+                    <tr class="ant-table-row"><td>部门</td><td>{{action_result.data.department}}</td></tr>
+                    <tr class="ant-table-row"><td>企业微信 ID</td><td>{{action_result.data.wechat_work_id}}</td></tr>
+                    {{if action_result.data.asset}}
+                    <tr class="ant-table-row"><td>主机名</td><td>{{action_result.data.asset.hostname}}</td></tr>
+                    <tr class="ant-table-row"><td>资产类型</td><td>{{action_result.data.asset.asset_type}}</td></tr>
+                    <tr class="ant-table-row"><td>位置</td><td>{{action_result.data.asset.location}}</td></tr>
+                    <tr class="ant-table-row"><td>状态</td><td>{{action_result.data.asset.status}}</td></tr>
+                    {{/if}}
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

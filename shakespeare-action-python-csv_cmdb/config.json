@@ -1,0 +1,203 @@
+{
+    "name": "csv_cmdb",
+    "description": "CSV 台账查询 CMDB，支持按 IP 查询负责人和按 AD 账号查询资产",
+    "app_version": "1.0.0",
+    "jar": "csv_cmdb.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/csv_cmdb.png",
+    "category": "工具",
+    "product_name": "CSV CMDB",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "cmdb_csv_file": {
+            "data_type": "outside_file",
+            "description": "CMDB 台账 CSV 文件对象",
+            "default_value": "",
+            "options": "",
+            "required": true,
+            "order": 0
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "检查 CMDB CSV 文件是否可读取",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "order": 0,
+                    "data_path": "action_result.data.status",
+                    "data_type": "string",
+                    "description": "状态"
+                },
+                {
+                    "order": 1,
+                    "data_path": "action_result.data.csv_file",
+                    "data_type": "string",
+                    "description": "CSV 文件路径"
+                },
+                {
+                    "order": 2,
+                    "data_path": "action_result.data.asset_count",
+                    "data_type": "integer",
+                    "description": "资产数量"
+                },
+                {
+                    "order": 3,
+                    "data_path": "action_result.data.msg",
+                    "data_type": "string",
+                    "description": "健康检查消息"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "query_owner_by_ip",
+            "class_name": "query_owner_by_ip",
+            "description": "根据 IP 查询资产负责人信息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_owner_by_ip.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "资产 IP 地址",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "order": 0,
+                    "data_path": "action_result.data.matched",
+                    "data_type": "boolean",
+                    "description": "是否匹配到资产"
+                },
+                {
+                    "order": 1,
+                    "data_path": "action_result.data.owner_id",
+                    "data_type": "string",
+                    "description": "负责人 ID"
+                },
+                {
+                    "order": 2,
+                    "data_path": "action_result.data.owner_name",
+                    "data_type": "string",
+                    "description": "负责人姓名"
+                },
+                {
+                    "order": 3,
+                    "data_path": "action_result.data.ad_account",
+                    "data_type": "string",
+                    "description": "负责人 AD 账号"
+                },
+                {
+                    "order": 4,
+                    "data_path": "action_result.data.email",
+                    "data_type": "string",
+                    "description": "负责人邮箱"
+                },
+                {
+                    "order": 5,
+                    "data_path": "action_result.data.mobile",
+                    "data_type": "string",
+                    "description": "负责人电话"
+                },
+                {
+                    "order": 6,
+                    "data_path": "action_result.data.department",
+                    "data_type": "string",
+                    "description": "负责人部门"
+                },
+                {
+                    "order": 7,
+                    "data_path": "action_result.data.wechat_work_id",
+                    "data_type": "string",
+                    "description": "企业微信 ID"
+                },
+                {
+                    "order": 8,
+                    "data_path": "action_result.data.asset",
+                    "data_type": "jsonObject",
+                    "description": "匹配到的资产完整记录"
+                },
+                {
+                    "order": 9,
+                    "data_path": "action_result.data.owner",
+                    "data_type": "jsonObject",
+                    "description": "负责人信息对象"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "query_assets_by_ad_id",
+            "class_name": "query_assets_by_ad_id",
+            "description": "根据负责人 AD 账号查询名下资产",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_assets_by_ad_id.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "ad_account": {
+                    "data_type": "string",
+                    "description": "负责人 AD 账号",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "order": 0,
+                    "data_path": "action_result.data.matched",
+                    "data_type": "boolean",
+                    "description": "是否匹配到资产"
+                },
+                {
+                    "order": 1,
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "资产数量"
+                },
+                {
+                    "order": 2,
+                    "data_path": "action_result.data.assets.*",
+                    "data_type": "jsonObject",
+                    "description": "资产列表循环输出"
+                },
+                {
+                    "order": 3,
+                    "data_path": "action_result.data.assets",
+                    "data_type": "jsonArray",
+                    "description": "资产列表"
+                },
+                {
+                    "order": 4,
+                    "data_path": "action_result.data.owner",
+                    "data_type": "jsonObject",
+                    "description": "负责人信息对象"
+                }
+            ]
+        }
+    ]
+}
