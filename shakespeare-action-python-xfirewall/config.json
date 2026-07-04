@@ -1,0 +1,258 @@
+{
+    "name": "xfirewall",
+    "description": "XFirewall 新一代网络防火墙",
+    "app_version": "1.0.2",
+    "jar": "xfirewall.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/xfirewall_logo.svg",
+    "category": "安全产品",
+    "product_name": "XFirewall防火墙",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "firewall_url": {
+            "data_type": "string",
+            "description": "防火墙管理地址，格式为 http[s]://IP地址或域名:port",
+            "required": true,
+            "order": 0
+        },
+        "admin_token": {
+            "data_type": "password",
+            "description": "具有管理权限的 API Token",
+            "required": true,
+            "order": 1
+        },
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 数据库文件路径",
+            "default_value": "/tmp/xfirewall.db",
+            "required": false,
+            "order": 2
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "封禁/解封操作的最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 3
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "封禁/解封操作的最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 4
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "block_ip",
+            "class_name": "block_ip",
+            "description": "封禁 IP 地址",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/block_ip.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "需要封禁的 IP 地址",
+                    "required": true,
+                    "order": 0
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "封禁原因（可选）",
+                    "default_value": "安全策略封禁",
+                    "required": false,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "操作结果"
+                },
+                {
+                    "data_path": "action_result.data.rule_id",
+                    "data_type": "string",
+                    "description": "封禁规则ID"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "unblock_ip",
+            "class_name": "unblock_ip",
+            "description": "解封 IP 地址",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/unblock_ip.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "需要解封的 IP 地址",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "操作结果"
+                },
+                {
+                    "data_path": "action_result.data.unblocked_count",
+                    "data_type": "integer",
+                    "description": "解封的规则数量"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "query_blocked_ips",
+            "class_name": "query_blocked_ips",
+            "description": "查询当前封禁的 IP 列表",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_blocked_ips.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回结果数量限制",
+                    "default_value": 100,
+                    "required": false,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.blocked_ips",
+                    "data_type": "jsonarray",
+                    "description": "当前封禁的 IP 列表"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "总封禁 IP 数量"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "query_block_history",
+            "class_name": "query_block_history",
+            "description": "查询封禁历史记录",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_block_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "要查询的 IP 地址（可选，不填查询全部）",
+                    "required": false,
+                    "order": 0
+                },
+                "start_time": {
+                    "data_type": "string",
+                    "description": "开始时间（格式：YYYY-MM-DD HH:MM:SS）",
+                    "required": false,
+                    "order": 1
+                },
+                "end_time": {
+                    "data_type": "string",
+                    "description": "结束时间（格式：YYYY-MM-DD HH:MM:SS）",
+                    "required": false,
+                    "order": 2
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回结果数量限制",
+                    "default_value": 100,
+                    "required": false,
+                    "order": 3
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.history_records",
+                    "data_type": "jsonarray",
+                    "description": "封禁历史记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "总记录数量"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "query_firewall_status",
+            "class_name": "query_firewall_status",
+            "description": "查询防火墙运行状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_firewall_status.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.data.status",
+                    "data_type": "string",
+                    "description": "防火墙运行状态"
+                },
+                {
+                    "data_path": "action_result.data.components",
+                    "data_type": "jsonarray",
+                    "description": "关键组件状态"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "防火墙健康检查",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.summary.statusCode",
+                    "data_type": "string",
+                    "description": "健康检查状态码"
+                },
+                {
+                    "data_path": "action_result.data.msg",
+                    "data_type": "string",
+                    "description": "健康检查信息"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "系统信息"
+                }
+            ]
+        }
+    ]
+}

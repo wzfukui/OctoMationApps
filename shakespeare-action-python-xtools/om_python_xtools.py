@@ -53,7 +53,7 @@ def str_concat(params, assets, context_info):
         json_ret["data"]["str3"], json_ret["data"]["str4"],
         json_ret["data"]["str5"], json_ret["data"]["str6"]
     ]
-    
+
     concat_str = json_ret["data"]["concat_symbol"].join(str_array)
     json_ret["data"]["str_concated"] = concat_str
 
@@ -182,7 +182,7 @@ def str_substring_with_index(params, assets, context_info):
     """
     截取字符串，根据start和end位置[开始，结束)。 # 2024-08-18
     :param params: 参数字典，包含以下参数：
-        - str_original: 待截取的字符串    
+        - str_original: 待截取的字符串
         - start: 开始位置（会被保留）
         - end: 结束位置（不被保留）
     """
@@ -215,7 +215,7 @@ def str_substring_with_start_and_length(params, assets, context_info):
     """
     截取字符串，根据start和length位置。  # 2024-08-18
     :param params: 参数字典，包含以下参数：
-        - str_original: 待截取的字符串    
+        - str_original: 待截取的字符串
         - start: 开始位置
         - length: 截取长度
     """
@@ -235,14 +235,14 @@ def str_substring_with_start_and_length(params, assets, context_info):
     length = params.get("length", 0)
     try:
         json_ret["data"]["start"] = int(start)
-        json_ret["data"]["length"] = int(length)    
+        json_ret["data"]["length"] = int(length)
     except Exception as e:
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = str(e)
         return json_ret
     json_ret["data"]["str"] = str_original
     json_ret["data"]["str_substring"] = str_original[start:start+length]
-    
+
     return json_ret
 
 def str_to_int(params, assets, context_info):
@@ -394,7 +394,7 @@ def str_to_lower(params, assets, context_info):
 
     return json_ret
 
-def str_strip(params, assets, context_info):    
+def str_strip(params, assets, context_info):
     """
     去除字符串两端的空格。 # 2024-08-18
     :param params: 参数字典，包含以下参数：
@@ -442,7 +442,7 @@ def str_escape(params, assets, context_info):
         }
     }
     json_ret["data"]["str_original"] = params.get("str_original", "")
-    
+
     escape_string_array = params.get("escape_string_array", ['\\', '"'])
 
     def escape_string(input_string):
@@ -454,12 +454,12 @@ def str_escape(params, assets, context_info):
             '\n': '\\n',   # 换行符
             '\t': '\\t',   # 制表符
         }
-        
+
         # 使用 str.replace() 方法进行转义替换
         for char, replacement in escape_map.items():
             if char in escape_string_array:
                 input_string = input_string.replace(char, replacement)
-        
+
         return input_string
 
     json_ret["data"]["str_escaped"] = escape_string(json_ret["data"]["str_original"])
@@ -539,7 +539,7 @@ def type_to_type(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty input value"
         return json_ret
-    
+
     type_to = params.get("type_to", "string").lower()
     try:
         if type_to == "string" or type_to == "str":
@@ -821,7 +821,7 @@ def encrypt_hash(params, assets, context_info):
     """
     字符串加密为hash。 # 2024-08-19
     :param params: 参数字典，包含以下参数：
-        - str: 待加密的字符串        
+        - str: 待加密的字符串
         - hash_method: 加密方法，默认md5
         - encode: 编码方式，默认utf-8
     """
@@ -972,24 +972,24 @@ def encrypt_aes_encrypt(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty string"
         return json_ret
-    
+
     encode = params.get("encode", "utf-8").lower()
     if encode == "":
         encode = "utf-8"
-    
+
     key = params.get("key", "")
     if key == "":
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty key"
         return json_ret
-    
+
     key_bytes = key.encode(encode)
     key_length = len(key_bytes)
     if key_length not in [16, 24, 32]:
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Invalid key length"
         return json_ret
-    
+
     mode_str = params.get("mode", "CBC").upper()
     if mode_str not in ["CBC", "ECB"]:
         json_ret["summary"]["statusCode"] = 400
@@ -1045,24 +1045,24 @@ def encrypt_aes_decrypt(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty aes encrypted string"
         return json_ret
-    
+
     encode = params.get("encode", "utf-8").lower()
     if encode == "":
         encode = "utf-8"
-    
+
     key = params.get("key", "")
     if key == "":
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty key"
         return json_ret
-    
+
     key_bytes = key.encode(encode)
     key_length = len(key_bytes)
     if key_length not in [16, 24, 32]:
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Invalid key length"
         return json_ret
-    
+
     mode_str = params.get("mode", "CBC").upper()
     if mode_str not in ["CBC", "ECB"]:
         json_ret["summary"]["statusCode"] = 400
@@ -1120,19 +1120,19 @@ def encrypt_rsa_encrypt(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty string"
         return json_ret
-    
+
     encode = params.get("encode", "utf-8").lower()
     if encode == "":
         encode = "utf-8"
-    
+
     public_key_str = params.get("public_key", "")
     if public_key_str == "":
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty public key"
         return json_ret
-    
+
     ### 代码看起来丑，但似乎也没有比这个更高明的办法
-    
+
     if '-----BEGIN PUBLIC KEY-----' in public_key_str and '-----END PUBLIC KEY-----' in public_key_str:
         public_key_str = public_key_str.replace('-----BEGIN PUBLIC KEY-----', '-----AAAAAAAA-----')
         public_key_str = public_key_str.replace('-----END PUBLIC KEY-----', "-----BBBBBBBB-----")
@@ -1145,14 +1145,14 @@ def encrypt_rsa_encrypt(params, assets, context_info):
         public_key_str = public_key_str.replace(' ', '').replace('\n', '')
         public_key_str = public_key_str.replace('-----AAAAAAAA-----', '-----BEGIN RSA PUBLIC KEY-----\n')
         public_key_str = public_key_str.replace('-----BBBBBBBB-----', '\n-----END RSA PUBLIC KEY-----')
-    
+
 
     padding_method = params.get("padding_method", "OAEP_SHA256")
     if padding_method not in ['OAEP_SHA256', 'OAEP_SHA1', 'PKCS1v15']:
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Invalid padding method"
         return json_ret
-    
+
     def load_public_key(public_key_str, encoding='utf-8'):
         try:
             # First, try to load as PEM
@@ -1210,7 +1210,7 @@ def encrypt_rsa_encrypt(params, assets, context_info):
             # print(f"Encryption error: {str(e)}")
             raise
         return messaged_encrypted
-    
+
     try:
         public_key = load_public_key(public_key_str)
         encrypted_message = encrypt_message(str_to_encrypt, public_key, padding_method)
@@ -1223,7 +1223,7 @@ def encrypt_rsa_encrypt(params, assets, context_info):
     except Exception as e:
         json_ret["summary"]["statusCode"] = 500
         json_ret["summary"]["msg"] = str(e)
-    
+
     return json_ret
 
 def encrypt_rsa_decrypt(params, assets, context_info):
@@ -1253,17 +1253,17 @@ def encrypt_rsa_decrypt(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty rsa encrypted string"
         return json_ret
-    
+
     encoding = params.get("encoding", "utf-8").lower()
     if encoding == "":
         encoding = "utf-8"
-    
+
     private_key_str = params.get("private_key", "")
     if private_key_str == "":
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Empty private key"
         return json_ret
-    
+
     if '-----BEGIN PRIVATE KEY-----' in private_key_str and '-----END PRIVATE KEY-----' in private_key_str:
         private_key_str = private_key_str.replace('-----BEGIN PRIVATE KEY-----', '-----AAAAAAAA-----')
         private_key_str = private_key_str.replace('-----END PRIVATE KEY-----', "-----BBBBBBBB-----")
@@ -1282,7 +1282,7 @@ def encrypt_rsa_decrypt(params, assets, context_info):
         private_key_str = private_key_str.replace(' ', '').replace('\n', '')
         private_key_str = private_key_str.replace('-----AAAAAAAA-----', '-----BEGIN ENCRYPTED PRIVATE KEY-----\n')
         private_key_str = private_key_str.replace('-----BBBBBBBB-----', '\n-----END ENCRYPTED PRIVATE KEY-----')
-    
+
     def load_private_key(private_key_str, password=None, encoding='utf-8'):
         if password is not None:
             password = password.encode(encoding)
@@ -1323,10 +1323,10 @@ def encrypt_rsa_decrypt(params, assets, context_info):
 
         # If all attempts fail, raise an error
         raise ValueError("Unsupported key format. Tried PEM, DER, and PKCS#8 formats.")
-    
+
     def decrypt_message(encrypted_message, private_key, encoding='utf-8'):
         encrypted_bytes = base64.b64decode(encrypted_message)
-        
+
         decryption_methods = [
             ('OAEP_SHA256', lambda: private_key.decrypt(
                 encrypted_bytes,
@@ -1349,7 +1349,7 @@ def encrypt_rsa_decrypt(params, assets, context_info):
                 asymmetric_padding.PKCS1v15()
             ))
         ]
-        
+
         for method_name, method in decryption_methods:
             try:
                 decrypted = method()
@@ -1357,14 +1357,12 @@ def encrypt_rsa_decrypt(params, assets, context_info):
             except Exception as e:
                 # print(f"Decryption method {method_name} failed: {str(e)}")
                 continue
-        
+
         raise ValueError("Unable to decrypt the message. The encryption method might be incompatible.")
 
     private_key_password = None
     if params.get("private_key_has_password", False) == True:
         private_key_password = params.get("private_key_password", "")
-
-    print(f"private_key_password:{private_key_password}")
 
     try:
         private_key = load_private_key(private_key_str, password=private_key_password, encoding=encoding)
@@ -1374,7 +1372,7 @@ def encrypt_rsa_decrypt(params, assets, context_info):
     except Exception as e:
         json_ret["summary"]["statusCode"] = 500
         json_ret["summary"]["msg"] = str(e)
-    
+
     return json_ret
 
 def is_valid_ip(ip):
@@ -1427,7 +1425,7 @@ def file_info(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "File or Path does not exist"
         return json_ret
-    
+
     if os.path.isdir(file_path):
         json_ret["data"]["isdir"] = True
     elif os.path.isfile(file_path):
@@ -1475,7 +1473,7 @@ def file_read(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "File or Path does not exist"
         return json_ret
-    
+
     encode = params.get("encode", "utf-8").lower()
     if encode == "":
         encode = "utf-8"
@@ -1486,7 +1484,7 @@ def file_read(params, assets, context_info):
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "Invalid file_size_limit number"
         return json_ret
-    
+
     # 判断文件大小是否超过限制
     if os.path.getsize(file_path) > file_size_limit * 1024:
         json_ret["summary"]["statusCode"] = 400
@@ -1673,10 +1671,146 @@ def regex_match(params, assets, context_info):
     json_ret = {"code": 200, "msg": "","data":{"findall": re.findall(pattern, str_data)}}
     return json_ret
 
+
+_URL_PATTERN = re.compile(r"""https?://[^\s'"<>]+""", re.IGNORECASE)
+_EMAIL_PATTERN = re.compile(r"""(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![A-Za-z0-9_%+-])""")
+_DOMAIN_PATTERN = re.compile(r"""(?<![A-Za-z0-9.-])(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,}(?![A-Za-z0-9-])""")
+_IPV4_PATTERN = re.compile(r"""(?<![\d.])(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}(?![\d.])""")
+_IPV6_CANDIDATE_PATTERN = re.compile(r"""(?<![A-Fa-f0-9:])(?:\[?[A-Fa-f0-9]{0,4}:[A-Fa-f0-9:.%]+\]?)(?![A-Fa-f0-9:])""")
+_MD5_PATTERN = re.compile(r"""(?<![A-Fa-f0-9])[A-Fa-f0-9]{32}(?![A-Fa-f0-9])""")
+_SHA256_PATTERN = re.compile(r"""(?<![A-Fa-f0-9])[A-Fa-f0-9]{64}(?![A-Fa-f0-9])""")
+_MAC_PATTERN = re.compile(r"""(?<![A-Fa-f0-9])(?:[A-Fa-f0-9]{2}[:-]){5}[A-Fa-f0-9]{2}(?![A-Fa-f0-9])|(?<![A-Fa-f0-9])[A-Fa-f0-9]{4}\.[A-Fa-f0-9]{4}\.[A-Fa-f0-9]{4}(?![A-Fa-f0-9])""")
+_TRAILING_TEXT_PUNCTUATION = ".,;:!?)]}>，。；：！？）】》"
+_FILE_EXTENSION_LIKE_TLDS = {
+    "apk", "asp", "aspx", "avi", "bak", "bat", "bin", "bmp", "bz2", "conf",
+    "css", "csv", "dat", "dll", "doc", "docx", "dmg", "exe", "gif", "gz",
+    "htm", "html", "ico", "ini", "iso", "jar", "jpeg", "jpg", "js", "json",
+    "log", "md", "mov", "mp3", "mp4", "pdf", "php", "png", "ppt", "pptx",
+    "rar", "sh", "svg", "tar", "tmp", "txt", "wav", "xls", "xlsx", "xml",
+    "yaml", "yml", "zip",
+}
+
+
+def _unique(items):
+    seen = set()
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
+def _clean_text_token(value):
+    return value.strip().strip(_TRAILING_TEXT_PUNCTUATION)
+
+
+def _looks_like_file_name(value):
+    suffix = value.rsplit(".", 1)[-1].lower()
+    return suffix in _FILE_EXTENSION_LIKE_TLDS
+
+
+def _parse_text_result(params, field_name, values):
+    return {
+        "code": 200,
+        "msg": "",
+        "data": {
+            "text": params.get("text", ""),
+            field_name: _unique([value for value in values if value])
+        },
+        "summary": {
+            "statusCode": 0,
+            "msg": ""
+        }
+    }
+
+
+def parse_text_to_urls(params, assets, context_info):
+    text = params.get("text", "")
+    urls = [_clean_text_token(match.group(0)) for match in _URL_PATTERN.finditer(text)]
+    return _parse_text_result(params, "urls", urls)
+
+
+def parse_text_to_emails(params, assets, context_info):
+    text = params.get("text", "")
+    emails = [_clean_text_token(match.group(0)) for match in _EMAIL_PATTERN.finditer(text)]
+    return _parse_text_result(params, "emails", emails)
+
+
+def parse_text_to_domains(params, assets, context_info):
+    text = params.get("text", "")
+    domains = []
+
+    for url in parse_text_to_urls(params, assets, context_info)["data"]["urls"]:
+        host = urllib.parse.urlparse(url).hostname
+        if host and not is_valid_ip(host):
+            domains.append(host.lower())
+
+    for email in parse_text_to_emails(params, assets, context_info)["data"]["emails"]:
+        domains.append(email.rsplit("@", 1)[-1].lower())
+
+    for match in _DOMAIN_PATTERN.finditer(text):
+        domain = _clean_text_token(match.group(0)).lower()
+        if not _MAC_PATTERN.fullmatch(domain) and not _looks_like_file_name(domain):
+            domains.append(domain)
+
+    return _parse_text_result(params, "domains", domains)
+
+
+def parse_text_to_ipv4s(params, assets, context_info):
+    text = params.get("text", "")
+    ipv4s = []
+    for match in _IPV4_PATTERN.finditer(text):
+        value = match.group(0)
+        try:
+            ipv4s.append(str(ipaddress.IPv4Address(value)))
+        except ValueError:
+            pass
+    return _parse_text_result(params, "ipv4s", ipv4s)
+
+
+def parse_text_to_ipv6s(params, assets, context_info):
+    text = params.get("text", "")
+    ipv6s = []
+    for match in _IPV6_CANDIDATE_PATTERN.finditer(text):
+        value = _clean_text_token(match.group(0)).strip("[]")
+        if "." in value:
+            continue
+        try:
+            ipv6s.append(str(ipaddress.IPv6Address(value)))
+        except ValueError:
+            pass
+    return _parse_text_result(params, "ipv6s", ipv6s)
+
+
+def parse_text_to_md5s(params, assets, context_info):
+    text = params.get("text", "")
+    md5s = [match.group(0).lower() for match in _MD5_PATTERN.finditer(text)]
+    return _parse_text_result(params, "md5s", md5s)
+
+
+def parse_text_to_sha128s(params, assets, context_info):
+    text = params.get("text", "")
+    sha128s = [match.group(0).lower() for match in _MD5_PATTERN.finditer(text)]
+    return _parse_text_result(params, "sha128s", sha128s)
+
+
+def parse_text_to_sha256s(params, assets, context_info):
+    text = params.get("text", "")
+    sha256s = [match.group(0).lower() for match in _SHA256_PATTERN.finditer(text)]
+    return _parse_text_result(params, "sha256s", sha256s)
+
+
+def parse_text_to_macs(params, assets, context_info):
+    text = params.get("text", "")
+    macs = [match.group(0).lower() for match in _MAC_PATTERN.finditer(text)]
+    return _parse_text_result(params, "macs", macs)
+
+
 import diskcache as dc
 def cache_mgmt(params, assets, context_info):
     # 创建一个缓存对象
-    
+
     # 获取参数
     _key = params.get('key', "")
     _value = params.get('value', "")
@@ -1722,7 +1856,7 @@ def cache_mgmt(params, assets, context_info):
 def get_file_download_url(params, assets, context_info):
     # 获取文件路径
     json_ret = {
-        "code": 200, 
+        "code": 200,
         "msg": "",
         "data":{
             "download_url": "",

@@ -1,0 +1,37 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            <table>
+                <thead class="ant-table-thead">
+                <tr>
+                    <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">描述</span></div></span></th>
+                    <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">值</span></div></span></th>
+                </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                {{each action_results as action_result}}
+                <tr class="ant-table-row"><td>状态码</td><td>{{action_result.summary.statusCode}}</td></tr>
+                <tr class="ant-table-row"><td>执行结果</td><td>{{action_result.summary.msg}}</td></tr>
+                <tr class="ant-table-row"><td>Topic</td><td>{{action_result.data.topic}}</td></tr>
+                <tr class="ant-table-row"><td>读取位置</td><td>{{action_result.data.read_from}}</td></tr>
+                <tr class="ant-table-row"><td>返回数量</td><td>{{action_result.data.count}}</td></tr>
+                {{/each}}
+                </tbody>
+            </table>
+            <table>
+                <thead class="ant-table-thead">
+                <tr>
+                    <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">消息</span></div></span></th>
+                </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                {{each action_results as action_result}}
+                {{each action_result.data.messages as record}}
+                <tr class="ant-table-row"><td>{{record}}</td></tr>
+                {{/each}}
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

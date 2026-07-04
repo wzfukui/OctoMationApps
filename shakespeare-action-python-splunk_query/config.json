@@ -1,0 +1,237 @@
+{
+    "name": "splunk_query",
+    "description": "Splunk 查询客户端，支持按时间窗口轮询告警",
+    "app_version": "1.0.0",
+    "jar": "splunk_query.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/splunk.png",
+    "category": "安全产品",
+    "product_name": "Splunk",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "splunk_web_url": {
+            "data_type": "string",
+            "description": "Splunk Web 地址，例如 http://192.168.44.28:8000。未填写 splunk_api_url 时将自动推导 https://host:8089",
+            "required": true,
+            "order": 0
+        },
+        "splunk_api_url": {
+            "data_type": "string",
+            "description": "Splunk REST API 地址，例如 https://192.168.44.28:8089。为空时根据 splunk_web_url 推导",
+            "default_value": "",
+            "required": false,
+            "order": 1
+        },
+        "connection_mode": {
+            "data_type": "string",
+            "description": "连接模式：auto 优先 8089 REST API，失败后回退到 8000 Web proxy；rest_api 只使用 REST API；web_proxy 只使用 Splunk Web",
+            "default_value": "auto",
+            "options": [
+                {
+                    "自动": "auto",
+                    "REST API": "rest_api",
+                    "Web Proxy": "web_proxy"
+                }
+            ],
+            "required": false,
+            "order": 2
+        },
+        "username": {
+            "data_type": "string",
+            "description": "Splunk 用户名",
+            "required": true,
+            "order": 3
+        },
+        "password": {
+            "data_type": "password",
+            "description": "Splunk 密码",
+            "required": true,
+            "order": 4
+        },
+        "verify_ssl": {
+            "data_type": "boolean",
+            "description": "是否校验 Splunk REST API SSL 证书",
+            "default_value": false,
+            "required": false,
+            "order": 5
+        },
+        "timeout": {
+            "data_type": "integer",
+            "description": "请求超时时间，单位秒",
+            "default_value": 30,
+            "required": false,
+            "order": 6
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "检查 Splunk REST API 是否可访问",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.data.status",
+                    "data_type": "string",
+                    "description": "连接状态"
+                },
+                {
+                    "data_path": "action_result.data.splunk_version",
+                    "data_type": "string",
+                    "description": "Splunk 版本"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "run_search",
+            "class_name": "run_search",
+            "description": "执行 Splunk SPL 查询",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/search_results.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "search": {
+                    "data_type": "string",
+                    "description": "Splunk SPL，例如 search sourcetype=fortigate | head 20",
+                    "default_value": "search sourcetype=fortigate",
+                    "required": true,
+                    "order": 0
+                },
+                "earliest_time": {
+                    "data_type": "string",
+                    "description": "查询开始时间，例如 -5m、2026-06-20T09:00:00+08:00 或 epoch 秒",
+                    "default_value": "-5m",
+                    "required": false,
+                    "order": 1
+                },
+                "latest_time": {
+                    "data_type": "string",
+                    "description": "查询结束时间，例如 now、rt、2026-06-20T09:05:00+08:00 或 epoch 秒",
+                    "default_value": "now",
+                    "required": false,
+                    "order": 2
+                },
+                "max_count": {
+                    "data_type": "integer",
+                    "description": "最多返回事件数量",
+                    "default_value": 50,
+                    "required": false,
+                    "order": 3
+                },
+                "fields": {
+                    "data_type": "string",
+                    "description": "返回字段白名单，英文逗号分隔；为空返回 Splunk 原始字段",
+                    "default_value": "",
+                    "required": false,
+                    "order": 4
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.events",
+                    "data_type": "jsonarray",
+                    "description": "查询结果事件列表"
+                },
+                {
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "返回事件数量"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "poll_alerts",
+            "class_name": "poll_alerts",
+            "description": "按告警时间窗口轮询 Splunk 告警事件",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/search_results.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "base_search": {
+                    "data_type": "string",
+                    "description": "基础告警查询 SPL，例如 search sourcetype=fortigate severity=high",
+                    "default_value": "search sourcetype=fortigate",
+                    "required": true,
+                    "order": 0
+                },
+                "last_poll_time": {
+                    "data_type": "string",
+                    "description": "上次轮询水位时间，可为空；有值时优先作为 earliest_time",
+                    "default_value": "",
+                    "required": false,
+                    "order": 1
+                },
+                "earliest_time": {
+                    "data_type": "string",
+                    "description": "查询开始时间，last_poll_time 为空时使用；默认 -5m",
+                    "default_value": "-5m",
+                    "required": false,
+                    "order": 2
+                },
+                "latest_time": {
+                    "data_type": "string",
+                    "description": "查询结束时间，默认 now",
+                    "default_value": "now",
+                    "required": false,
+                    "order": 3
+                },
+                "alert_time_field": {
+                    "data_type": "string",
+                    "description": "告警时间字段，默认 _time",
+                    "default_value": "_time",
+                    "required": false,
+                    "order": 4
+                },
+                "max_count": {
+                    "data_type": "integer",
+                    "description": "最多返回告警数量",
+                    "default_value": 50,
+                    "required": false,
+                    "order": 5
+                },
+                "fields": {
+                    "data_type": "string",
+                    "description": "返回字段白名单，英文逗号分隔；为空返回 Splunk 原始字段",
+                    "default_value": "",
+                    "required": false,
+                    "order": 6
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.events",
+                    "data_type": "string",
+                    "description": "告警事件列表"
+                },
+                {
+                    "data_path": "action_result.data.next_poll_time",
+                    "data_type": "string",
+                    "description": "建议下次轮询水位时间"
+                },
+                {
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "返回告警数量"
+                }
+            ]
+        }
+    ]
+}

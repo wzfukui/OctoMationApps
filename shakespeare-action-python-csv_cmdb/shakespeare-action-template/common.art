@@ -1,0 +1,26 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">字段</span></div></span></th>
+                        <th><span class="ant-table-header-column"><div><span class="ant-table-column-title">值</span></div></span></th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    {{each action_results action_result}}
+                    <tr class="ant-table-row"><td>状态码</td><td>{{action_result.summary.statusCode}}</td></tr>
+                    <tr class="ant-table-row"><td>消息</td><td>{{action_result.summary.msg}}</td></tr>
+                    {{each action_result.data value key}}
+                    <tr class="ant-table-row">
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+                    </tr>
+                    {{/each}}
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
