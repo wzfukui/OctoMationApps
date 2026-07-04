@@ -1,0 +1,78 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th>
+                            <span class="ant-table-header-column">
+                                <div>
+                                    <span class="ant-table-column-title">项目</span>
+                                    <span class="ant-table-column-sorter"></span>
+                                </div>
+                            </span>
+                        </th>
+                        <th>
+                            <span class="ant-table-header-column">
+                                <div>
+                                    <span class="ant-table-column-title">值</span>
+                                    <span class="ant-table-column-sorter"></span>
+                                </div>
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    {{each action_results action_result}}
+                    <tr class="ant-table-row">
+                        <td><strong>解封操作结果</strong></td>
+                        {{if action_result.data.result && action_result.data.result.indexOf("成功") > -1}}
+                            <td style="color:green"><i class="anticon anticon-check-circle"></i> {{action_result.data.result}}</td>
+                        {{else}}
+                            <td style="color:orange"><i class="anticon anticon-info-circle"></i> {{action_result.data.result}}</td>
+                        {{/if}}
+                    </tr>
+                    {{if action_result.data.unblocked_count !== undefined}}
+                    <tr class="ant-table-row">
+                        <td>移除规则数量</td>
+                        <td><span style="color:blue">{{action_result.data.unblocked_count}}</span> 条</td>
+                    </tr>
+                    {{/if}}
+                    {{if action_result.data.policy_commit}}
+                    <tr class="ant-table-row">
+                        <td>策略提交ID</td>
+                        <td><code>{{action_result.data.policy_commit.commit_id}}</code></td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td>策略同步状态</td>
+                        <td>
+                            <span style="color:#52c41a">
+                                <i class="anticon anticon-cloud-sync"></i> {{action_result.data.policy_commit.sync_status}}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td>下发节点</td>
+                        <td>{{action_result.data.policy_commit.device_node}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td>模拟耗时</td>
+                        <td><span style="color:#1890ff">{{action_result.data.policy_commit.latency_seconds}}</span> 秒</td>
+                    </tr>
+                    {{/if}}
+                    <tr class="ant-table-row">
+                        <td>状态码</td>
+                        <td>
+                            {{if action_result.code == 200}}
+                                <span style="color:green">{{action_result.code}}</span>
+                            {{else}}
+                                <span style="color:red">{{action_result.code}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

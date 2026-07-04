@@ -1,0 +1,61 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            {{each action_results action_result}}
+            <div style="margin-bottom: 16px;">
+                <h3 style="color: #1890ff; margin-bottom: 8px;">
+                    <i class="anticon anticon-history"></i> 封禁操作历史记录
+                </h3>
+                <div style="background: #f0f2f5; padding: 8px; border-radius: 4px; margin-bottom: 12px;">
+                    <strong>历史记录总数: </strong>
+                    <span style="color: #1890ff; font-size: 16px;">{{action_result.data.total_count}}</span> 条
+                </div>
+            </div>
+
+            {{if action_result.data.history_records && action_result.data.history_records.length > 0}}
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th>操作类型</th>
+                        <th>IP 地址</th>
+                        <th>操作理由</th>
+                        <th>操作者</th>
+                        <th>操作时间</th>
+                        <th>操作结果</th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    {{each action_result.data.history_records record}}
+                    <tr class="ant-table-row">
+                        <td>
+                            {{if record.operation_type == "block"}}
+                                <span style="color: #f5222d;"><i class="anticon anticon-stop"></i> 封禁</span>
+                            {{else}}
+                                <span style="color: #52c41a;"><i class="anticon anticon-check-circle"></i> 解封</span>
+                            {{/if}}
+                        </td>
+                        <td><code>{{record.ip_address}}</code></td>
+                        <td>{{record.reason || "无"}}</td>
+                        <td>{{record.operator}}</td>
+                        <td>{{record.timestamp}}</td>
+                        <td>
+                            {{if record.result == "success"}}
+                                <span style="color: #52c41a;">成功</span>
+                            {{else}}
+                                <span style="color: #f5222d;">{{record.result}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <div style="text-align: center; padding: 40px; color: #bfbfbf;">
+                <i class="anticon anticon-file-text" style="font-size: 24px;"></i>
+                <p>暂无历史记录</p>
+            </div>
+            {{/if}}
+            {{/each}}
+        </div>
+    </div>
+</div>

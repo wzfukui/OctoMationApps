@@ -1,0 +1,675 @@
+{
+    "name": "kafka_client",
+    "description": "Kafka 客户端，支持消息收发、Topic 查询、Consumer Group 查询和受保护的管理动作",
+    "app_version": "1.1.0",
+    "jar": "kafka_client.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/kafka.svg",
+    "category": "消息队列,基础工具",
+    "product_name": "Kafka",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "bootstrap_servers": {
+            "data_type": "string",
+            "description": "Kafka bootstrap servers，多个地址用英文逗号分隔",
+            "default_value": "192.168.22.251:9092",
+            "required": true,
+            "order": 0
+        },
+        "client_id": {
+            "data_type": "string",
+            "description": "Kafka client id",
+            "default_value": "honeyguide-kafka-client",
+            "required": false,
+            "order": 1
+        },
+        "security_protocol": {
+            "data_type": "string",
+            "description": "安全协议",
+            "default_value": "PLAINTEXT",
+            "options": [
+                {
+                    "PLAINTEXT": "PLAINTEXT",
+                    "SASL_PLAINTEXT": "SASL_PLAINTEXT",
+                    "SSL": "SSL",
+                    "SASL_SSL": "SASL_SSL"
+                }
+            ],
+            "required": false,
+            "order": 2
+        },
+        "sasl_mechanism": {
+            "data_type": "string",
+            "description": "SASL 认证机制，例如 PLAIN、SCRAM-SHA-256、SCRAM-SHA-512；PLAINTEXT 可留空",
+            "default_value": "",
+            "required": false,
+            "order": 3
+        },
+        "sasl_username": {
+            "data_type": "string",
+            "description": "SASL 用户名",
+            "default_value": "",
+            "required": false,
+            "order": 4
+        },
+        "sasl_password": {
+            "data_type": "password",
+            "description": "SASL 密码",
+            "default_value": "",
+            "required": false,
+            "order": 5
+        },
+        "timeout_ms": {
+            "data_type": "integer",
+            "description": "请求超时时间，单位毫秒",
+            "default_value": 10000,
+            "required": false,
+            "order": 6
+        },
+        "encoding": {
+            "data_type": "string",
+            "description": "消息 key/value 编码",
+            "default_value": "utf-8",
+            "required": false,
+            "order": 7
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "检查 Kafka 连接并列出 Topic",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.data.status",
+                    "data_type": "string",
+                    "description": "连接状态"
+                },
+                {
+                    "data_path": "action_result.data.topic_count",
+                    "data_type": "integer",
+                    "description": "Topic 数量"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "list_topics",
+            "class_name": "list_topics",
+            "description": "列出 Kafka Topic",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "include_internal": {
+                    "data_type": "boolean",
+                    "description": "是否包含 __consumer_offsets 等内部 Topic",
+                    "default_value": false,
+                    "required": false,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.topics",
+                    "data_type": "jsonarray",
+                    "description": "Topic 列表"
+                },
+                {
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "Topic 数量"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "describe_topic",
+            "class_name": "describe_topic",
+            "description": "查看 Topic 分区、副本、leader、ISR 等元数据",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "count_messages",
+            "class_name": "count_messages",
+            "description": "统计 Kafka Topic 当前可读消息条目",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "总消息条数"
+                },
+                {
+                    "data_path": "action_result.data.partitions",
+                    "data_type": "jsonarray",
+                    "description": "分区统计"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "read_messages",
+            "class_name": "read_messages",
+            "description": "从 Kafka Topic 读取 N 条消息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/messages.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts",
+                    "required": true,
+                    "order": 0
+                },
+                "max_messages": {
+                    "data_type": "integer",
+                    "description": "最多读取消息数量",
+                    "default_value": 10,
+                    "required": false,
+                    "order": 1
+                },
+                "read_from": {
+                    "data_type": "string",
+                    "description": "读取位置：latest 从每个分区尾部回看 N 条；earliest 从起始位置读取",
+                    "default_value": "latest",
+                    "required": false,
+                    "order": 2,
+                    "options": [
+                        {
+                            "最新 N 条": "latest",
+                            "最早 N 条": "earliest"
+                        }
+                    ]
+                },
+                "timeout_ms": {
+                    "data_type": "integer",
+                    "description": "读取超时时间，单位毫秒",
+                    "default_value": 10000,
+                    "required": false,
+                    "order": 3
+                },
+                "include_headers": {
+                    "data_type": "boolean",
+                    "description": "是否返回消息 Headers",
+                    "default_value": true,
+                    "required": false,
+                    "order": 4
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.messages",
+                    "data_type": "jsonarray",
+                    "description": "消息列表"
+                },
+                {
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "返回消息数量"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "simple_read_message",
+            "class_name": "simple_read_message",
+            "description": "从 Kafka Topic 读取一条消息，仅返回消息 value",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts",
+                    "required": true,
+                    "order": 0
+                },
+                "read_from": {
+                    "data_type": "string",
+                    "description": "读取位置：latest 读取最新一条；earliest 读取最早一条",
+                    "default_value": "latest",
+                    "required": false,
+                    "order": 1,
+                    "options": [
+                        {
+                            "最新一条": "latest",
+                            "最早一条": "earliest"
+                        }
+                    ]
+                },
+                "timeout_ms": {
+                    "data_type": "integer",
+                    "description": "读取超时时间，单位毫秒",
+                    "default_value": 10000,
+                    "required": false,
+                    "order": 2
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "string",
+                    "description": "消息 Value"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "list_consumer_groups",
+            "class_name": "list_consumer_groups",
+            "description": "列出 Kafka Consumer Group",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.data.consumer_groups",
+                    "data_type": "jsonarray",
+                    "description": "Consumer Group 列表"
+                },
+                {
+                    "data_path": "action_result.data.count",
+                    "data_type": "integer",
+                    "description": "Consumer Group 数量"
+                }
+            ]
+        },
+        {
+            "order": 7,
+            "action": "describe_consumer_group",
+            "class_name": "describe_consumer_group",
+            "description": "查看 Consumer Group 成员和状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "group_id": {
+                    "data_type": "string",
+                    "description": "Consumer Group ID",
+                    "default_value": "",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        },
+        {
+            "order": 8,
+            "action": "consumer_lag",
+            "class_name": "consumer_lag",
+            "description": "统计 Consumer Group 消费延迟",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "group_id": {
+                    "data_type": "string",
+                    "description": "Consumer Group ID",
+                    "default_value": "",
+                    "required": true,
+                    "order": 0
+                },
+                "topic": {
+                    "data_type": "string",
+                    "description": "可选 Topic 过滤，为空表示统计该 Group 所有已提交 offset 的 Topic",
+                    "default_value": "",
+                    "required": false,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.total_lag",
+                    "data_type": "integer",
+                    "description": "总 Lag"
+                },
+                {
+                    "data_path": "action_result.data.partitions",
+                    "data_type": "jsonarray",
+                    "description": "分区 Lag 明细"
+                }
+            ]
+        },
+        {
+            "order": 9,
+            "action": "send_message",
+            "class_name": "send_message",
+            "description": "向 Kafka Topic 发送消息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts",
+                    "required": true,
+                    "order": 0
+                },
+                "message": {
+                    "data_type": "string",
+                    "description": "消息内容，字符串或 JSON 文本",
+                    "default_value": "{\"event_type\":\"demo\",\"source\":\"honeyguide\"}",
+                    "required": true,
+                    "order": 1
+                },
+                "key": {
+                    "data_type": "string",
+                    "description": "消息 Key，可为空",
+                    "default_value": "",
+                    "required": false,
+                    "order": 2
+                },
+                "headers": {
+                    "data_type": "string",
+                    "description": "消息 Headers，支持 JSON、key=value,key2=value2 或空",
+                    "default_value": "",
+                    "required": false,
+                    "order": 3
+                },
+                "partition": {
+                    "data_type": "integer",
+                    "description": "指定分区，可为空",
+                    "default_value": "",
+                    "required": false,
+                    "order": 4
+                },
+                "timestamp_ms": {
+                    "data_type": "integer",
+                    "description": "消息时间戳毫秒，可为空",
+                    "default_value": "",
+                    "required": false,
+                    "order": 5
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.sent",
+                    "data_type": "boolean",
+                    "description": "是否发送成功"
+                },
+                {
+                    "data_path": "action_result.data.offset",
+                    "data_type": "integer",
+                    "description": "消息 Offset"
+                }
+            ]
+        },
+        {
+            "order": 10,
+            "action": "create_topic",
+            "class_name": "create_topic",
+            "description": "创建 Topic，高危动作，需要 confirm=yes",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts-test",
+                    "required": true,
+                    "order": 0
+                },
+                "partitions": {
+                    "data_type": "integer",
+                    "description": "分区数量",
+                    "default_value": 1,
+                    "required": false,
+                    "order": 1
+                },
+                "replication_factor": {
+                    "data_type": "integer",
+                    "description": "副本因子",
+                    "default_value": 1,
+                    "required": false,
+                    "order": 2
+                },
+                "topic_configs": {
+                    "data_type": "string",
+                    "description": "Topic 配置，支持 JSON 或 key=value,key2=value2",
+                    "default_value": "",
+                    "required": false,
+                    "order": 3
+                },
+                "confirm": {
+                    "data_type": "string",
+                    "description": "高危管理动作确认字段；必须输入 yes 才会执行",
+                    "default_value": "",
+                    "required": true,
+                    "order": 4
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        },
+        {
+            "order": 11,
+            "action": "delete_topic",
+            "class_name": "delete_topic",
+            "description": "删除 Topic，高危动作，需要 confirm=yes",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts-test",
+                    "required": true,
+                    "order": 0
+                },
+                "confirm": {
+                    "data_type": "string",
+                    "description": "高危管理动作确认字段；必须输入 yes 才会执行",
+                    "default_value": "",
+                    "required": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        },
+        {
+            "order": 12,
+            "action": "clear_topic",
+            "class_name": "clear_topic",
+            "description": "清空 Topic，高危动作，需要 confirm=yes；kafka-python 2.0.1 不支持该动作",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts-test",
+                    "required": true,
+                    "order": 0
+                },
+                "confirm": {
+                    "data_type": "string",
+                    "description": "高危管理动作确认字段；必须输入 yes 才会执行",
+                    "default_value": "",
+                    "required": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        },
+        {
+            "order": 13,
+            "action": "create_partitions",
+            "class_name": "create_partitions",
+            "description": "增加 Topic 分区，高危动作，需要 confirm=yes；Kafka 不支持减少分区",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts-test",
+                    "required": true,
+                    "order": 0
+                },
+                "total_count": {
+                    "data_type": "integer",
+                    "description": "调整后的总分区数，只能大于当前分区数",
+                    "default_value": 2,
+                    "required": true,
+                    "order": 1
+                },
+                "confirm": {
+                    "data_type": "string",
+                    "description": "高危管理动作确认字段；必须输入 yes 才会执行",
+                    "default_value": "",
+                    "required": true,
+                    "order": 2
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        },
+        {
+            "order": 14,
+            "action": "alter_topic_config",
+            "class_name": "alter_topic_config",
+            "description": "修改 Topic 配置，高危动作，需要 confirm=yes",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/action_result.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "topic": {
+                    "data_type": "string",
+                    "description": "Topic 名称",
+                    "default_value": "zensoc-alerts-test",
+                    "required": true,
+                    "order": 0
+                },
+                "topic_configs": {
+                    "data_type": "string",
+                    "description": "Topic 配置，支持 JSON 或 key=value,key2=value2，例如 retention.ms=60000",
+                    "default_value": "",
+                    "required": true,
+                    "order": 1
+                },
+                "confirm": {
+                    "data_type": "string",
+                    "description": "高危管理动作确认字段；必须输入 yes 才会执行",
+                    "default_value": "",
+                    "required": true,
+                    "order": 2
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data",
+                    "data_type": "json",
+                    "description": "动作结果"
+                }
+            ]
+        }
+    ]
+}

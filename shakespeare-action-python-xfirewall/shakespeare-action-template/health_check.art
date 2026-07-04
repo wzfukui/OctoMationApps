@@ -1,0 +1,151 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+    <div class="ant-table-content">
+        <div class="ant-table-body">
+            {{each action_results action_result}}
+            <div style="margin-bottom: 16px;">
+                <h3 style="color: #52c41a; margin-bottom: 8px;">
+                    <i class="anticon anticon-dashboard"></i> XFirewall 系统健康检查
+                </h3>
+                <div style="background: {{if action_result.summary.statusCode == '200'}}#f6ffed{{else}}#fff2e8{{/if}}; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+                    <strong>状态: </strong>
+                    {{if action_result.summary.statusCode == "200"}}
+                        <span style="color: #52c41a; font-size: 16px;">
+                            <i class="anticon anticon-check-circle"></i> {{action_result.data.msg}}
+                        </span>
+                    {{else}}
+                        <span style="color: #fa8c16; font-size: 16px;">
+                            <i class="anticon anticon-warning"></i> {{action_result.data.msg}}
+                        </span>
+                    {{/if}}
+                </div>
+            </div>
+
+            {{if action_result.data.system_info}}
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th>系统信息</th>
+                        <th>值</th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    <tr class="ant-table-row">
+                        <td><strong>产品版本</strong></td>
+                        <td><code>{{action_result.data.system_info.version}}</code></td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>运行状态</strong></td>
+                        <td>
+                            {{if action_result.data.system_info.status == "running"}}
+                                <span style="color: #52c41a;">
+                                    <i class="anticon anticon-play-circle"></i> 正在运行
+                                </span>
+                            {{else}}
+                                <span style="color: #f5222d;">{{action_result.data.system_info.status}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>健康等级</strong></td>
+                        <td>
+                            {{if action_result.data.system_info.health_level == "healthy"}}
+                                <span style="color: #52c41a;">健康</span>
+                            {{else}}
+                                <span style="color: #fa8c16;">需关注</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>运行时长</strong></td>
+                        <td>{{action_result.data.system_info.uptime}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>当前封禁IP数</strong></td>
+                        <td><span style="color: #f5222d; font-weight: bold;">{{action_result.data.system_info.total_blocked_ips}}</span> 个</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>CPU 使用率</strong></td>
+                        <td>{{action_result.data.system_info.cpu_usage}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>内存使用率</strong></td>
+                        <td>{{action_result.data.system_info.memory_usage}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>会话使用率</strong></td>
+                        <td>{{action_result.data.system_info.session_usage}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>活跃会话数</strong></td>
+                        <td>{{action_result.data.system_info.active_sessions}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>策略版本</strong></td>
+                        <td>{{action_result.data.system_info.policy_revision}}</td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>威胁库版本</strong></td>
+                        <td><code>{{action_result.data.system_info.threat_db_version}}</code></td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>数据库状态</strong></td>
+                        <td>
+                            {{if action_result.data.system_info.database_status == "connected"}}
+                                <span style="color: #52c41a;">
+                                    <i class="anticon anticon-database"></i> 已连接
+                                </span>
+                            {{else}}
+                                <span style="color: #f5222d;">{{action_result.data.system_info.database_status}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr class="ant-table-row">
+                        <td><strong>数据库路径</strong></td>
+                        <td><code style="font-size: 12px;">{{action_result.data.system_info.database_path}}</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            {{if action_result.data.system_info.components && action_result.data.system_info.components.length > 0}}
+            <h4 style="margin-top: 16px; color: #1890ff;">关键组件状态</h4>
+            <table>
+                <thead class="ant-table-thead">
+                    <tr>
+                        <th>组件</th>
+                        <th>状态</th>
+                        <th>详情</th>
+                    </tr>
+                </thead>
+                <tbody class="ant-table-tbody">
+                    {{each action_result.data.system_info.components component}}
+                    <tr class="ant-table-row">
+                        <td>{{component.name}}</td>
+                        <td>
+                            {{if component.status == "running" || component.status == "synced" || component.status == "connected"}}
+                                <span style="color:#52c41a">{{component.status}}</span>
+                            {{else}}
+                                <span style="color:#fa8c16">{{component.status}}</span>
+                            {{/if}}
+                        </td>
+                        <td>
+                            {{if component.latency_ms}}
+                                延迟 {{component.latency_ms}} ms
+                            {{else if component.last_update}}
+                                最近更新 {{component.last_update}}
+                            {{else if component.queue_depth !== undefined}}
+                                队列深度 {{component.queue_depth}}
+                            {{else if component.path}}
+                                <code>{{component.path}}</code>
+                            {{else}}
+                                -
+                            {{/if}}
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{/if}}
+            {{/if}}
+            {{/each}}
+        </div>
+    </div>
+</div>
