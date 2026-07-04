@@ -111,6 +111,89 @@ def count_records_within_time_window(params, assets, context_info):
 
     return json_ret 
 
+def check_record_exists_in_active_list(params, assets, context_info):
+    """判断记录是否存在于活动列表"""
+
+    activelist_name = params.get("activelist_name", "")
+    item_key = params.get("item_key", "")
+    item_value = params.get("item_value", "")
+    match_mode = params.get("match_mode", "key")
+    end_time = params.get("end_time", "")
+    time_delta_minute = params.get("time_delta_minute", "")
+
+    json_ret = {
+        "code": 200,
+        "msg": "",
+        "data": {
+            "err_code": 0,
+            "err_msg": "",
+            "activelist_name": activelist_name,
+            "item_key": item_key,
+            "item_value": item_value,
+            "match_mode": match_mode,
+            "record_exists": False,
+            "record_count": 0
+        }
+    }
+
+    if not re.compile(r'^[a-zA-Z0-9_\-]+$').match(activelist_name):
+        json_ret["data"]["err_code"] = 400
+        json_ret["data"]["err_msg"] = "活动列表名称不符合要求：字母、数字、下划线、中划线的组合"
+        return json_ret
+
+    if match_mode not in ["key", "value", "key_value"]:
+        json_ret["data"]["err_code"] = 400
+        json_ret["data"]["err_msg"] = "match_mode仅支持key、value、key_value"
+        return json_ret
+
+    if match_mode == "key" and (item_key == "" or item_key is None):
+        json_ret["data"]["err_code"] = 400
+        json_ret["data"]["err_msg"] = "item_key不能为空"
+        return json_ret
+    if match_mode == "value" and (item_value == "" or item_value is None):
+        json_ret["data"]["err_code"] = 400
+        json_ret["data"]["err_msg"] = "item_value不能为空"
+        return json_ret
+    if match_mode == "key_value" and (item_key == "" or item_key is None or item_value == "" or item_value is None):
+        json_ret["data"]["err_code"] = 400
+        json_ret["data"]["err_msg"] = "item_key和item_value不能为空"
+        return json_ret
+
+    time_delta_str = None
+    if time_delta_minute not in ["", None]:
+        try:
+            time_delta_minute = int(time_delta_minute)
+            if time_delta_minute > 0:
+                time_delta_str = f"{time_delta_minute}m"
+        except:
+            json_ret["data"]["err_code"] = 400
+            json_ret["data"]["err_msg"] = "time_delta_minute必须为正整数"
+            return json_ret
+
+    if end_time == "":
+        end_time = None
+
+    hg_client = HoneyGuide(context_info)
+    activelist = ActiveListManager(hg_client)
+    exists_result = activelist.check_record_exists_in_active_list(
+        activelist_name,
+        item_key=item_key,
+        item_value=item_value,
+        match_mode=match_mode,
+        end_time=end_time,
+        time_delta=time_delta_str
+    )
+    if exists_result is not None:
+        json_ret["data"]["err_code"] = 0
+        json_ret["data"]["err_msg"] = "查询成功"
+        json_ret["data"]["record_exists"] = exists_result["record_exists"]
+        json_ret["data"]["record_count"] = exists_result["record_count"]
+    else:
+        json_ret["data"]["err_code"] = 1
+        json_ret["data"]["err_msg"] = "查询失败\n" + activelist.msg
+
+    return json_ret
+
 def remove_record_from_active_list(params, assets, context_info):
     """从活动列表中移除记录"""
 
@@ -380,4 +463,3 @@ def health_check(params, assets, context_info):
         json_ret["summary"]["msg"] =  "健康检查失败:" + str(e)  
 
     return json_ret
-
