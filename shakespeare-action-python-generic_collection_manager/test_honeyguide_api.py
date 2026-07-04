@@ -1,4 +1,5 @@
 import unittest
+import os
 from hg_api import HoneyGuideAPI
 import logging
 
@@ -8,8 +9,10 @@ collection_id = 0
 
 class TestHoneyguideAPI(unittest.TestCase):
     def setUp(self) -> None:
-        self._hg_api_url = "https://hg.wuzhi-ai.com"
-        self._hg_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.***.y7voPwo3qeuVqfLuFGIL3xmmPzkgU_Rd4fBFeX41fiE"
+        self._hg_api_url = os.environ.get("HG_API_URL", "").strip()
+        self._hg_token = os.environ.get("HG_TOKEN", "").strip()
+        if not self._hg_api_url or not self._hg_token:
+            self.skipTest("Set HG_API_URL and HG_TOKEN to run integration tests")
         self._context_info ={
             "appName": "generic_collection_manager", 
             "actionName": "UniTest:TestGenericCollectionManager", 

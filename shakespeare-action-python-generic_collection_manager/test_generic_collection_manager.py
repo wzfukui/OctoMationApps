@@ -1,4 +1,5 @@
 import unittest
+import os
 from generic_collection_manager import list_generic_collections, create_generic_collection, delete_generic_collection
 from generic_collection_manager import list_generic_collection_elements, add_generic_collection_item,get_generic_collection_element_info
 from generic_collection_manager import update_generic_collection_element, delete_generic_collection_element
@@ -8,8 +9,10 @@ logging.basicConfig(level=logging.INFO)
 
 class TestGenericCollectionManager(unittest.TestCase):
     def setUp(self):
-        self._hg_api_url = "https://hg.wuzhi-ai.com"
-        self._hg_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.***.y7voPwo3qeuVqfLuFGIL3xmmPzkgU_Rd4fBFeX41fiE"
+        self._hg_api_url = os.environ.get("HG_API_URL", "").strip()
+        self._hg_token = os.environ.get("HG_TOKEN", "").strip()
+        if not self._hg_api_url or not self._hg_token:
+            self.skipTest("Set HG_API_URL and HG_TOKEN to run integration tests")
         self._timeout_seconds = 10
         self._context_info ={
             "appName": "generic_collection_manager", 
