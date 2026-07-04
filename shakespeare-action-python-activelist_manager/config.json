@@ -1,7 +1,7 @@
 {
     "name": "activelist_manager",
     "description": "活动列表管理器",
-    "app_version": "1.1.4",
+    "app_version": "1.1.5",
     "jar": "activelist_manager.py",
     "readme": "resources/readme.md",
     "logo": "resources/activelist.jpeg",
@@ -28,7 +28,7 @@
             "parameters": {
                 "activelist_name": {
                     "data_type": "string",
-                    "description": "活动列表的名称。不同的应用场景，请务必区分。格式：数字、字母、下划线、中划线，最长512字符",
+                    "description": "活动列表的名称。不同的应用场景，请务必区分。格式：数字、字母、下划线、中划线，最长60字符",
                     "default_value": "",
                     "options": "",
                     "required": true,
@@ -191,6 +191,124 @@
                     "data_path": "action_result.data.record_count",
                     "data_type": "integer",
                     "description": "记录行数，默认为：0"
+                }
+            ]
+        },
+        {
+            "action": "check_record_exists_in_active_list",
+            "class_name": "check_record_exists_in_active_list",
+            "description": "判断记录是否存在于活动列表",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/check_record_exists_in_active_list.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "activelist_name": {
+                    "data_type": "string",
+                    "description": "活动列表名称",
+                    "default_value": "",
+                    "options": "",
+                    "required": true,
+                    "order": 0,
+                    "multi-selected": false
+                },
+                "match_mode": {
+                    "data_type": "string",
+                    "description": "匹配方式：key、value、key_value",
+                    "default_value": "key",
+                    "options": [
+                        {
+                            "按key匹配": "key"
+                        },
+                        {
+                            "按value匹配": "value"
+                        },
+                        {
+                            "按key和value匹配": "key_value"
+                        }
+                    ],
+                    "required": true,
+                    "order": 1,
+                    "multi-selected": false
+                },
+                "item_key": {
+                    "data_type": "string",
+                    "description": "活动列表元素的key值，match_mode为key或key_value时必填",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 2,
+                    "multi-selected": false
+                },
+                "item_value": {
+                    "data_type": "string",
+                    "description": "活动列表元素的value值，match_mode为value或key_value时必填",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 3,
+                    "multi-selected": false
+                },
+                "end_time": {
+                    "data_type": "datetime",
+                    "description": "可选，活动列表时间窗口的截止时间，默认为当前时间。",
+                    "default_value": "",
+                    "options": "",
+                    "required": false,
+                    "order": 4,
+                    "format": "年年年年-月月-日日 时时:分分:秒秒"
+                },
+                "time_delta_minute": {
+                    "data_type": "integer",
+                    "description": "可选，时间窗口长度，单位是分钟；为空或0时不限制时间窗口。",
+                    "default_value": "",
+                    "options": [
+                        {
+                            "不限制": ""
+                        },
+                        {
+                            "30分钟": 30
+                        },
+                        {
+                            "1小时": 60
+                        },
+                        {
+                            "4小时": 240
+                        },
+                        {
+                            "24小时": 1440
+                        }
+                    ],
+                    "required": false,
+                    "order": 5
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.err_code",
+                    "data_type": "integer",
+                    "description": "返回码，默认为：0"
+                },
+                {
+                    "data_path": "action_result.data.err_msg",
+                    "data_type": "string",
+                    "description": "返回信息"
+                },
+                {
+                    "data_path": "action_result.data.record_exists",
+                    "data_type": "boolean",
+                    "description": "记录是否存在"
+                },
+                {
+                    "data_path": "action_result.data.record_count",
+                    "data_type": "integer",
+                    "description": "匹配到的记录行数"
+                },
+                {
+                    "data_path": "action_result.data.match_mode",
+                    "data_type": "string",
+                    "description": "匹配方式"
                 }
             ]
         },
