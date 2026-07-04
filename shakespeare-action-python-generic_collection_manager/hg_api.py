@@ -1,3 +1,4 @@
+import concurrent.futures
 import requests
 from action_sdk_for_cache.action_cache_sdk import HoneyGuide
 from datetime import datetime, timedelta
@@ -5,6 +6,8 @@ requests.packages.urllib3.disable_warnings()
 
 class HoneyGuideAPI():
     __useragent = "HG-Python-SDK"
+    __max_page_size = 200
+    __max_parallel_pages = 10
     def __init__(self, hg_server, hg_token, context_info={}, timeout_seconds=10):
         self._hg_server = hg_server
         self._hg_token = hg_token
@@ -49,16 +52,41 @@ class HoneyGuideAPI():
                 self.summary["msg"] = f"_request_api():请求失败，错误信息：{e}"
             retry_times -= 1
         return response
+
+    def _parse_find_response(self, response):
+        if response is None:
+            return None, 500, "请求失败，未收到API响应"
+        if response.status_code != 200:
+            return None, response.status_code, f"请求失败，状态码：{response.status_code}"
+        try:
+            json_result = response.json()
+            if json_result["code"] == 200 and 'result' in json_result.keys() \
+                and 'empty' in json_result['result'].keys() and 'content' in json_result['result'].keys():
+                return json_result['result'], 0, ""
+            return None, 500, f"请求失败，返回结果不符合预期，返回结果：{json_result}"
+        except Exception as e:
+            return None, 500, f"请求失败，错误信息：{e}"
+
+    def _fetch_find_page(self, url, json_payload, page, batch_size):
+        json_params = {
+            "page": page,
+            "size": batch_size
+        }
+        response = self._request_api("POST", url, json_params=json_params, json_payload=json_payload)
+        result, status_code, msg = self._parse_find_response(response)
+        return page, result, status_code, msg
+
     # 集合操作
-    def get_generic_collections(self, collection_name=None,page_start=1, batch_size=50, max_count=200):
+    def get_generic_collections(self, collection_name=None,page_start=1, batch_size=200, max_count=200):
         """
         获取所有（通用）集合信息，并返回集合字典组成的数组。本动作会逐页查询，直到所有集合都查询完毕。
         :param page_start: 起始页码，默认1。
-        :param batch_size: 每页查询数量，默认50。
-        :param max_count: 最多返回的集合数量，默认1000。
+        :param batch_size: 每页查询数量，默认200。
+        :param max_count: 最多返回的集合数量，默认200。
         :return: 集合字典组成的数组。
         """
         self._clear_status()
+        batch_size = min(int(batch_size), self.__max_page_size)
         json_payload = {}
         if collection_name and collection_name!= "":
             # 集合名称是模糊查询，需要在返回结果中再次确认
@@ -228,17 +256,20 @@ class HoneyGuideAPI():
             self.summary["msg"] = f"请求失败，错误信息：{e}"
         return delete_collection_result
     # 元素操作
-    def get_generic_collection_elements(self, collection_name=None, collection_id=None, element_value=None,page_start=1, batch_size=50, max_count=200):
+    def get_generic_collection_elements(self, collection_name=None, collection_id=None, element_value=None,page_start=1, batch_size=200, max_count=200, parallel_page_count=5):
         """
         获取指定集合（通用）中的所有元素信息，并返回元素字典组成的数组。本动作会逐页查询，直到所有元素都查询完毕。collection_id和collection_name不能同时为空。
         :param collection_id: 集合ID。
         :param collection_name: 集合名称。
         :param page_start: 起始页码，默认1。
-        :param batch_size: 每页查询数量，默认50。
-        :param max_count: 最多返回的元素数量，默认1000。
+        :param batch_size: 每页查询数量，默认200。
+        :param max_count: 最多返回的元素数量，默认200。
+        :param parallel_page_count: 后续页最大并发查询数量，默认5，最大10。设置为1时等同顺序查询。
         :return: 元素字典组成的数组。
         """
         self._clear_status()
+        batch_size = min(int(batch_size), self.__max_page_size)
+        parallel_page_count = min(max(int(parallel_page_count), 1), self.__max_parallel_pages)
         elements = []
         json_payload = {}
         if collection_id and collection_id != "":
@@ -248,47 +279,64 @@ class HoneyGuideAPI():
         if element_value and element_value != "":
             json_payload["value"] = element_value
         url = f"{self._hg_server}/api/collectionElement/find"
-        while True:
-            json_params = {
-                "page": page_start,
-                "size": batch_size
-            }
-            response = self._request_api("POST", url, json_params=json_params, json_payload=json_payload)
-            try:
-                if response.status_code == 200:
-                    json_result = response.json()
-                    if json_result["code"] == 200 and 'result' in json_result.keys() \
-                        and 'empty' in json_result['result'].keys() and 'content' in json_result['result'].keys():
-                        if json_result['result']['empty'] == False:
-                            for content in json_result["result"]["content"]:
-                                elements.append(content)
-                                if len(elements) >= max_count:
-                                    break
-                            if len(elements) >= max_count:
-                                # 已经获取到足够数量的元素，break
-                                break
-                            # 继续翻页查询
-                            if  'numberOfElements' in json_result['result'].keys():
-                                if json_result['result']['numberOfElements'] < batch_size:
-                                    # 已经没有下一页
-                                    break
-                                else:
-                                    # 还可能有下一页
-                                    page_start += 1
-                        else:
-                            break
-                    else:
-                        self.summary["statusCode"] = 500
-                        self.summary["msg"] = f"请求失败，返回结果不符合预期，返回结果：{json_result}"
-                        break
-                else:
-                    self.summary["statusCode"] = response.status_code
-                    self.summary["msg"] = f"请求失败，状态码：{response.status_code}"
+        page, first_result, status_code, msg = self._fetch_find_page(url, json_payload, page_start, batch_size)
+        if status_code != 0:
+            self.summary["statusCode"] = status_code
+            self.summary["msg"] = msg
+            return elements
+        if first_result['empty'] == False:
+            for content in first_result["content"]:
+                elements.append(content)
+                if len(elements) >= max_count:
                     break
-            except Exception as e:
-                self.summary["statusCode"] = 500
-                self.summary["msg"] = f"请求失败，错误信息：{e}"
-                break
+        if first_result['empty'] == False and len(elements) < max_count:
+            total_pages = first_result.get('totalPages', 0)
+            page_results = {}
+            if isinstance(total_pages, int) and total_pages > page_start:
+                remaining_pages_by_count = (max_count - len(elements) + batch_size - 1) // batch_size
+                last_page = min(total_pages, page_start + remaining_pages_by_count)
+                page_list = list(range(page_start + 1, last_page + 1))
+                max_workers = min(parallel_page_count, len(page_list))
+                if max_workers > 0:
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                        future_map = {
+                            executor.submit(self._fetch_find_page, url, json_payload, page, batch_size): page
+                            for page in page_list
+                        }
+                        for future in concurrent.futures.as_completed(future_map):
+                            page, result, status_code, msg = future.result()
+                            if status_code != 0:
+                                self.summary["statusCode"] = status_code
+                                self.summary["msg"] = msg
+                                return elements
+                            page_results[page] = result
+                    for page in sorted(page_results.keys()):
+                        for content in page_results[page]["content"]:
+                            elements.append(content)
+                            if len(elements) >= max_count:
+                                break
+                        if len(elements) >= max_count:
+                            break
+            else:
+                page_start += 1
+                while True:
+                    page, result, status_code, msg = self._fetch_find_page(url, json_payload, page_start, batch_size)
+                    if status_code != 0:
+                        self.summary["statusCode"] = status_code
+                        self.summary["msg"] = msg
+                        return elements
+                    if result['empty'] != False:
+                        break
+                    for content in result["content"]:
+                        elements.append(content)
+                        if len(elements) >= max_count:
+                            break
+                    if len(elements) >= max_count:
+                        break
+                    if 'numberOfElements' in result.keys():
+                        if result['numberOfElements'] < batch_size:
+                            break
+                        page_start += 1
         if len(elements) > 0:
             self.summary["statusCode"] = 0
             self.summary["msg"] = f"执行成功，共获取到{len(elements)}个元素。"
@@ -619,6 +667,6 @@ class HoneyGuideAPI():
             return False
 
 if __name__ == '__main__':
-    hg_server = "https://hg.wuzhi-ai.com"
-    hg_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.***.y7voPwo3qeuVqfLuFGIL3xmmPzkgU_Rd4fBFeX41fiE"
+    hg_server = "https://example.test"
+    hg_token = "YOUR_HG_TOKEN"
     hgapi = HoneyGuideAPI(hg_server, hg_token, context_info={}, timeout_seconds=10)

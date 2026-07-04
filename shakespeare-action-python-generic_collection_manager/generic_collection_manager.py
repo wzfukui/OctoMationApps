@@ -20,12 +20,16 @@ def list_generic_collections(params, assets, context_info):
     hg_token = assets["hg_token"].strip()
     timeout_seconds = assets.get("timeout_seconds", 10)
     hg_api = HoneyGuideAPI(hg_host, hg_token, context_info=context_info, timeout_seconds=timeout_seconds)
-    batch_size = params.get("batch_size", 30)
-    max_count = params.get("max_count", 2000)
+    batch_size = params.get("batch_size", 200)
+    max_count = params.get("max_count", 200)
     try:
         batch_size = int(batch_size)
         max_count = int(max_count)
     except:
+        json_ret["summary"]["statusCode"] = 400
+        json_ret["summary"]["msg"] = "batch_size和max_count必须为正整数"
+        return json_ret
+    if batch_size <= 0 or max_count <= 0:
         json_ret["summary"]["statusCode"] = 400
         json_ret["summary"]["msg"] = "batch_size和max_count必须为正整数"
         return json_ret
@@ -127,18 +131,47 @@ def list_generic_collection_elements(params, assets, context_info):
 
     hg_host = assets["hg_host"].strip().strip("/")
     hg_token = assets["hg_token"].strip()
-    batch_size = params.get("batch_size", 30)
-    max_count = params.get("max_count", 2000)
+    collection_id = params.get("collection_id", "")
+    collection_name = params.get("collection_name", "")
+    if isinstance(collection_id, str):
+        collection_id = collection_id.strip()
+    if isinstance(collection_name, str):
+        collection_name = collection_name.strip()
+    if collection_id != "":
+        try:
+            collection_id = int(collection_id)
+        except:
+            json_ret["summary"]["statusCode"] = 400
+            json_ret["summary"]["msg"] = "collection_id必须为整数数字"
+            return json_ret
+    if (collection_id == "" or collection_id == 0) and collection_name == "":
+        json_ret["summary"]["statusCode"] = 400
+        json_ret["summary"]["msg"] = "collection_id和collection_name不能同时为空"
+        return json_ret
+    batch_size = params.get("batch_size", 200)
+    max_count = params.get("max_count", 200)
+    parallel_page_count = params.get("parallel_page_count", 5)
     try:
         batch_size = int(batch_size)
         max_count = int(max_count)
+        parallel_page_count = int(parallel_page_count)
     except:
         json_ret["summary"]["statusCode"] = 400
-        json_ret["summary"]["msg"] = "batch_size和max_count必须为正整数"
+        json_ret["summary"]["msg"] = "batch_size、max_count和parallel_page_count必须为正整数"
+        return json_ret
+    if batch_size <= 0 or max_count <= 0 or parallel_page_count <= 0:
+        json_ret["summary"]["statusCode"] = 400
+        json_ret["summary"]["msg"] = "batch_size、max_count和parallel_page_count必须为正整数"
         return json_ret
     timeout_seconds = assets.get("timeout_seconds", 10)
     hg_api = HoneyGuideAPI(hg_host, hg_token, context_info=context_info, timeout_seconds=timeout_seconds)
-    element_list = hg_api.get_generic_collection_elements(batch_size=batch_size, max_count=max_count)
+    element_list = hg_api.get_generic_collection_elements(
+        collection_id=collection_id,
+        collection_name=collection_name,
+        batch_size=batch_size,
+        max_count=max_count,
+        parallel_page_count=parallel_page_count
+    )
     json_ret["summary"]["msg"] = hg_api.summary["msg"]
     json_ret["summary"]["statusCode"] = hg_api.summary["statusCode"]
     if hg_api.summary["statusCode"] == 0:
