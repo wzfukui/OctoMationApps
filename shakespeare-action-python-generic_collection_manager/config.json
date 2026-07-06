@@ -1,7 +1,7 @@
 {
     "name": "Generic_Collection_Manager",
     "description": "通用集合管理",
-    "app_version": "2.0.1",
+    "app_version": "2.0.3",
     "logic_language": "PYTHON",
     "min_shakespeare_version": "1.0",
     "logo": "resources/generic_collection_logo.png",
@@ -48,14 +48,14 @@
             "parameters": {
                 "batch_size": {
                     "data_type": "integer",
-                    "description": "API每页批次返回数量，默认：30",
-                    "default_value": 30,
+                    "description": "每次分页请求的返回数量，默认：200；HG平台单页上限为200，超过200会按200处理",
+                    "default_value": 200,
                     "required": false,
                     "order": 0
                 },
                 "max_count": {
                     "data_type": "integer",
-                    "description": "最大返回数量，默认：200",
+                    "description": "本动作累计返回的最大数量，默认：200；需要更多结果时可调大",
                     "default_value": 200,
                     "required": false,
                     "order": 1
@@ -255,17 +255,24 @@
                 },
                 "batch_size": {
                     "data_type": "integer",
-                    "description": "API每页批次返回数量，默认：30",
-                    "default_value": 30,
+                    "description": "每次分页请求的返回数量，默认：200；HG平台单页上限为200，超过200会按200处理",
+                    "default_value": 200,
                     "required": false,
                     "order": 2
                 },
                 "max_count": {
                     "data_type": "integer",
-                    "description": "最大返回数量，默认：200",
+                    "description": "本动作累计返回的最大数量，默认：200；需要更多结果时可调大",
                     "default_value": 200,
                     "required": false,
                     "order": 3
+                },
+                "parallel_page_count": {
+                    "data_type": "integer",
+                    "description": "后续页最大并发查询数量，默认：5，最大：10；设置为1时等同顺序查询",
+                    "default_value": 5,
+                    "required": false,
+                    "order": 4
                 }
             },
             "output": [
