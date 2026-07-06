@@ -4,13 +4,13 @@
 ## 一、APP介绍
 
 
-描述：本应用是一个通用的HTTP Client，支持GET、POST、PUT、DELETE等HTTP请求，允许用自定义HTTP HEAD、BODY、PROXY、TIMETOUT等参数。
+描述：本应用是一个通用的HTTP Client，支持GET、POST、PUT、PATCH、DELETE等HTTP请求，允许使用自定义HTTP Header、Body、Proxy、Timeout等参数。
 
 
 | 内容 | 详细描述 |
 | ---- | ------ |
-| app版本      | 1.0.5 |
-| 发布时间     | 2023-11-08 15:13:00 |
+| app版本      | 1.0.6 |
+| 发布时间     | 2026-07-06 15:51:10 |
 | 应用连接方式  | 标准HTTP请求 |
 | 支持版本     | HTTP/1.1 |
 | 作者        |  [@wzfukui](https://github.com/wzfukui) |
@@ -31,7 +31,8 @@
 
 
 3）更新说明
-> 首次发布
+> 1.0.6：修复布尔参数字符串解析问题，`"False"`/`"否"` 等值会正确解析为关闭；修复自定义 Header 值包含冒号时被截断的问题；修复 Cookie 字符串尾随分号导致动作失败的问题；新增 PATCH 请求方法；将 2xx HTTP 状态码统一视为请求成功；增强参数校验和错误返回结构；补充本地离线单元测试。
+> 1.0.5：首次发布。
 
 4) URL格式说明
 - [rfc1738](https://datatracker.ietf.org/doc/html/rfc1738)
@@ -51,17 +52,17 @@
 | SERVER |  string  | https://user:pass@example.com:8080 | 是 |  |  URL服务器  |
 | PATH |  string  | /user/info | 是 | / |  URL路径 |
 | QUERY |  string  | user=Chris&comment=I%20love%20OctoMation| 否 | 空 |  URL请求参数(不带?，需自行做好URL Encode) |
-| CONTENT_TYPE |  string  | application/json| 否 | application/json |  HTTP请求头中的Content-Type |
-| USER_AGENT |  string  | Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0 | 否 | 空 |  HTTP请求头中的Content-Type |
+| CONTENT_TYPE |  string  | application/json| 否 | 空 |  HTTP请求头中的Content-Type |
+| USER_AGENT |  string  | Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0 | 否 | OctoMation-HTTP-Client v1.0.0 |  HTTP请求头中的User-Agent |
 | COOKIES |  string  | vk=70acfa88; cbc-sid=2043816; ua=0b690880; uba_countrycode=HK;| 否 | 空 |  HTTP请求头中的Cookie字符串 |
 | COOKIE_FILE |  string  | /tmp/cookie.1312112.pkl | 否 | 空 |  存储Cookie的文件，优先级低于COOKIES |
 | HEADER |  string  | KEY:VALUE| 否 | 空 |  自定义HTTP头 |
 | BODY |  string  | 一段文本 | 否 | 空 |  HTTP请求体（Form模式需要自行URL Encode） |
-| METHOD |  string  | GET| 否 | GET |  HTTP请求方法 |
+| METHOD |  string  | GET| 否 | GET |  HTTP请求方法，支持HEAD、GET、POST、DELETE、OPTIONS、PUT、PATCH |
 | PROXY |  string  | http://127.0.0.1:3128| 否 | 空 |  代理服务器 |
-| ALLOW_REDIRECTS |  string  |True| 否 | True |  是否允许重定向 |
-| VERIFY_SSL |  string  |True| 否 | True |  是否校验SSL证书 |
-| TIMEOUT |  string  |120| 否 | 60 |  HTTP请求超时（秒） |
+| ALLOW_REDIRECTS |  boolean/string  | True | 否 | True |  是否允许重定向，支持True/False、是/否、1/0等值 |
+| VERIFY_SSL |  boolean/string  | True | 否 | True |  是否校验SSL证书，支持True/False、是/否、1/0等值 |
+| TIMEOUT |  integer  |120| 否 | 60 |  HTTP请求超时（秒），必须大于0 |
 
 
 ```json
@@ -149,7 +150,8 @@
                 "POST": "POST",
                 "DELETE": "DELETE",
                 "OPTIONS": "OPTIONS",
-                "PUT": "PUT"
+                "PUT": "PUT",
+                "PATCH": "PATCH"
             }
         ],
         "required": true,
