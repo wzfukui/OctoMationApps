@@ -14,10 +14,10 @@
 
 | 内容      | 详细描述       |
 |:--------|:-----------|
-| app上次版本 | 2.0.2      |
-| app更新版本 | 2.0.3      |
+| app上次版本 | 2.0.5      |
+| app更新版本 | 2.0.6      |
 | 发布时间    | 2022-12-20 |
-| 更新时间    | 2026-07-04 |
+| 更新时间    | 2026-07-08 |
 | 原开发者     | S*B        |
 | 更新人     | [wzfukui](https://github.com/wzfukui)   |
 | 对接方式  | API |
@@ -43,6 +43,8 @@
 | 2024-08-30 | 修复bug，优化健康检查代码，移除测试token    | wzfukui | 2.0.1 |
 | 2026-07-04 | 修复集合元素列表查询的集合筛选参数传递；适配HG平台单页200条上限，避免batch_size超过200时提前停止翻页；将batch_size默认值调整为200；基于HG分页返回的totalPages对后续页使用受控并发查询；补充参数说明 | Codex | 2.0.2 |
 | 2026-07-04 | 为集合元素列表查询新增parallel_page_count参数，支持按需调整后续页并发查询数量 | Codex | 2.0.3 |
+| 2026-07-08 | 新增按ID批量删除动作batch_delete_elements_by_ids；优化按value批量删除动作，默认并发查询元素ID后调用batchDelete批量删除，保留direct_by_value兼容模式；补充目标服务器性能测试工具和说明 | Codex | 2.0.5 |
+| 2026-07-08 | 修复并发查ID时SDK日志上下文缺少activeId等字段导致动作失败的问题；兼容activieId拼写，并将单个查询线程异常降级为失败明细 | Codex | 2.0.6 |
 
 2）**API使用说明**
 - 列举集合所有元素，会因为元素过多而耗费大量时间，不宜高频使用，即使使用，也建议使用异步动作完成
@@ -248,6 +250,72 @@
 |:-----|:-----|:---------|:-----|:-----|
 | action_result.summary.statusCode | 字符串 | | 0 | 返回错误码 |
 | action_result.summary.msg | 字符串 | | | 返回错误消息 |
+
+### batch_delete_elements_by_ids
+
+**描述**：元素_按ID批量删除集合元素
+
+此动作直接调用服务端批量删除接口 `/api/collectionElement/batchDelete`，请求体为元素ID数组。适合剧本中已经提前拿到元素ID的场景，写操作只需要一次或少量几次请求。
+
+**入参说明**
+
+| 参数 | 类型 | 数据样例 | 必须 | 默认值 | 说明 |
+|:-----|:-----|:---------|:-----|:-----|:-----|
+| id_str | 字符串 | 367710,367709,367708 | 是 | | 待删除的多个元素ID，按分隔符拆分 |
+| split_symbol | 字符串 | , | 否 | , | id_str的分隔符，默认英文逗号 |
+| batch_size | 整数 | 1000 | 否 | 1000 | 每次调用batchDelete提交的ID数量 |
+
+**出参说明**
+
+| 参数 | 类型 | 数据样例 | 默认值 | 说明 |
+|:-----|:-----|:---------|:-----|:-----|
+| action_result.data.total_count | 整数 | 3 | 0 | 去重后的实际删除ID数量 |
+| action_result.data.deleted_count | 整数 | 3 | 0 | 服务端返回的实际删除数量 |
+| action_result.data.delete_milliseconds | 整数 | 200 | 0 | 批量删除耗时，单位毫秒 |
+| action_result.summary.statusCode | 字符串 | | 0 | 返回错误码。全部成功为0，部分失败为207 |
+| action_result.summary.msg | 字符串 | | | 返回错误消息 |
+
+### batch_delete_elements_by_value
+
+**描述**：元素_批量删除集合中的多个value
+
+默认模式为 `lookup_ids_then_batch_delete`：先按 value 并发查询元素ID，再调用 `/api/collectionElement/batchDelete` 按ID批量删除。这样可以把多 value 删除的写操作压缩为一次或少量几次批量请求。也可设置 `delete_mode=direct_by_value`，改为逐个调用 `/api/collectionElement/deleteElement` 按 `collectionName + value` 直接删除。
+
+**入参说明**
+
+| 参数 | 类型 | 数据样例 | 必须 | 默认值 | 说明 |
+|:-----|:-----|:---------|:-----|:-----|:-----|
+| collection_name | 字符串 | BLACKLIST | 是 | | 集合名称 |
+| value_str | 字符串 | 1.1.1.1,2.2.2.2 | 是 | | 待删除的多个value，按分隔符拆分 |
+| split_symbol | 字符串 | , | 否 | , | value_str的分隔符，默认英文逗号 |
+| delete_mode | 字符串 | lookup_ids_then_batch_delete | 否 | lookup_ids_then_batch_delete | 删除模式：先查ID再批量删除，或逐个按value直删 |
+| parallel_count | 整数 | 5 | 否 | 5 | 并发查ID数量，最大20 |
+| batch_size | 整数 | 1000 | 否 | 1000 | 每次调用batchDelete提交的ID数量 |
+
+**出参说明**
+
+| 参数 | 类型 | 数据样例 | 默认值 | 说明 |
+|:-----|:-----|:---------|:-----|:-----|
+| action_result.data.raw_count | 整数 | 3 | 0 | 输入拆分并过滤空值后的value数量，包含重复项 |
+| action_result.data.total_count | 整数 | 2 | 0 | 去重后的实际删除value数量 |
+| action_result.data.success_count | 整数 | 2 | 0 | 删除成功的value数量 |
+| action_result.data.failed_count | 整数 | 0 | 0 | 删除失败的value数量 |
+| action_result.data.deleted_count | 整数 | 2 | 0 | 服务端返回的实际删除数量 |
+| action_result.data.not_found_count | 整数 | 0 | 0 | 未查询到ID、无需删除的value数量 |
+| action_result.data.lookup_milliseconds | 整数 | 1200 | 0 | 查ID耗时，单位毫秒 |
+| action_result.data.delete_milliseconds | 整数 | 200 | 0 | 批量删除耗时，单位毫秒 |
+| action_result.data.success_values | 数组 | | | 删除成功的value明细 |
+| action_result.data.failed_values | 数组 | | | 删除失败的value明细 |
+| action_result.summary.statusCode | 字符串 | | 0 | 返回错误码。全部成功为0，部分失败为207 |
+| action_result.summary.msg | 字符串 | | | 返回错误消息 |
+
+**目标服务器性能测试**
+
+仓库内提供 `benchmark_batch_delete.py`，可在目标服务器环境上创建临时测试集合、添加指定数量元素，然后用逗号拼接的 `value_str` 调用 `batch_delete_elements_by_value` 并输出删除耗时。脚本只操作自动创建的 `unitest_batch_delete_...` 临时集合，结束时会删除该集合。
+
+```bash
+HG_API_URL="https://example.test" HG_TOKEN="***" python3 benchmark_batch_delete.py --count 1000 --parallel-count 5
+```
 
 ### check_generic_collection_element_exists
 
