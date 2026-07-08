@@ -8,16 +8,30 @@ class HoneyGuideAPI():
     __useragent = "HG-Python-SDK"
     __max_page_size = 200
     __max_parallel_pages = 10
-    def __init__(self, hg_server, hg_token, context_info={}, timeout_seconds=10):
+    def __init__(self, hg_server, hg_token, context_info=None, timeout_seconds=10):
         self._hg_server = hg_server
         self._hg_token = hg_token
-        self._hg_sdk = HoneyGuide(context_info=context_info)
+        self._context_info = self._normalize_context_info(context_info)
+        self._hg_sdk = HoneyGuide(context_info=self._context_info)
         self._api_timeout_seconds = timeout_seconds
         self.summary = {
             "statusCode": 0,
             "msg": "",
             "duplicated": False
         }
+
+    def _normalize_context_info(self, context_info):
+        if not isinstance(context_info, dict):
+            context_info = {}
+        normalized_context = dict(context_info)
+        if "activeId" not in normalized_context and "activieId" in normalized_context:
+            normalized_context["activeId"] = normalized_context["activieId"]
+        normalized_context.setdefault("appName", "generic_collection_manager")
+        normalized_context.setdefault("actionName", "generic_collection_manager")
+        normalized_context.setdefault("eventId", "0")
+        normalized_context.setdefault("activeId", "0")
+        normalized_context.setdefault("logMode", False)
+        return normalized_context
 
     def _clear_status(self):
         self.summary = {
@@ -291,8 +305,9 @@ class HoneyGuideAPI():
                     break
         if first_result['empty'] == False and len(elements) < max_count:
             total_pages = first_result.get('totalPages', 0)
+            has_total_pages = isinstance(total_pages, int) and total_pages > 0
             page_results = {}
-            if isinstance(total_pages, int) and total_pages > page_start:
+            if has_total_pages and total_pages > page_start:
                 remaining_pages_by_count = (max_count - len(elements) + batch_size - 1) // batch_size
                 last_page = min(total_pages, page_start + remaining_pages_by_count)
                 page_list = list(range(page_start + 1, last_page + 1))
@@ -317,7 +332,7 @@ class HoneyGuideAPI():
                                 break
                         if len(elements) >= max_count:
                             break
-            else:
+            elif not has_total_pages:
                 page_start += 1
                 while True:
                     page, result, status_code, msg = self._fetch_find_page(url, json_payload, page_start, batch_size)
@@ -564,7 +579,7 @@ class HoneyGuideAPI():
         return element_id
 
     def delete_generic_collection_element_by_name(self, collection_name, element_value):
-        return self.delete_generic_collection_element_by_value(self, collection_name, element_value)
+        return self.delete_generic_collection_element_by_value(collection_name, element_value)
 
     def delete_generic_collection_element_by_value(self, collection_name, element_value):
         """
@@ -573,6 +588,67 @@ class HoneyGuideAPI():
         :param element_name: 元素名称。
         :return: 删除成功返回True，失败返回False。
         """
+        self._clear_status()
+        delete_element_result = self.delete_generic_collection_element_by_condition(collection_name=collection_name, element_value=element_value)
+        if delete_element_result:
+            return True
+        if self.summary["statusCode"] not in [404, 405, 501]:
+            return False
+        return self._delete_generic_collection_element_by_value_with_id(collection_name, element_value)
+
+    def delete_generic_collection_element_by_condition(self, collection_name=None, element_value=None):
+        """
+        直接按集合名称和元素值删除集合元素。
+        :param collection_name: 集合名称。
+        :param element_value: 元素值。
+        :return: 删除成功返回True，失败返回False。
+        """
+        self._clear_status()
+        delete_element_result = False
+        if not collection_name or collection_name == "":
+            self.summary["statusCode"] = 400
+            self.summary["msg"] = "请求失败，collection_name不能为空。"
+            return delete_element_result
+        if not element_value or element_value == "":
+            self.summary["statusCode"] = 400
+            self.summary["msg"] = "请求失败，element_value不能为空。"
+            return delete_element_result
+        json_payload = {
+            "collectionName": collection_name,
+            "value": element_value
+        }
+        url = f"{self._hg_server}/api/collectionElement/deleteElement"
+        try:
+            response = self._request_api("POST", url, json_payload=json_payload)
+            if response is None:
+                self.summary["statusCode"] = 500
+                self.summary["msg"] = "删除元素失败，未收到API响应。"
+                return delete_element_result
+            self._hg_sdk.actionLog.info(f"delete_generic_collection_element_by_condition():请求结果：{response.text}")
+            self.summary["statusCode"] = response.status_code
+            self.summary["msg"] = f"删除元素失败，服务器返回：{response.text}"
+            json_result = response.json()
+            if response.status_code == 200 and 'code' in json_result.keys():
+                self.summary["statusCode"] = json_result["code"]
+                if json_result["code"] == 200:
+                    self.summary["statusCode"] = 0
+                    self.summary["msg"] = "删除元素成功。"
+                    if 'result' in json_result.keys():
+                        self.summary["deleted_count"] = json_result["result"]
+                    delete_element_result = True
+                elif 'msg' in json_result.keys():
+                    self.summary["msg"] = json_result["msg"]
+            elif 'code' in json_result.keys():
+                self.summary["statusCode"] = json_result["code"]
+                if 'msg' in json_result.keys():
+                    self.summary["msg"] = json_result["msg"]
+        except Exception as e:
+            self.summary["statusCode"] = 500
+            self.summary["msg"] = f"HTTP请求失败，错误信息：{e}"
+
+        return delete_element_result
+
+    def _delete_generic_collection_element_by_value_with_id(self, collection_name, element_value):
         self._clear_status()
         delete_element_result = False
         element_id = self.get_generic_collection_element_id_by_name(collection_name=collection_name, element_value=element_value)
@@ -616,6 +692,54 @@ class HoneyGuideAPI():
             else:
                 if 'code' in json_result.keys():
                     self.summary["statusCode"] = json_result["code"]
+        except Exception as e:
+            self.summary["statusCode"] = 500
+            self.summary["msg"] = f"HTTP请求失败，错误信息：{e}"
+
+        return delete_element_result
+
+    def delete_generic_collection_elements_by_ids(self, element_ids):
+        """
+        根据元素ID批量删除通用集合中的元素。
+        :param element_ids: 元素ID列表。
+        :return: 删除成功返回True，失败返回False。
+        """
+        self._clear_status()
+        delete_element_result = False
+        if not element_ids or len(element_ids) == 0:
+            self.summary["statusCode"] = 400
+            self.summary["msg"] = "请求失败，element_ids不能为空。"
+            return delete_element_result
+        try:
+            json_payload = [int(element_id) for element_id in element_ids]
+        except Exception:
+            self.summary["statusCode"] = 400
+            self.summary["msg"] = "请求失败，element_ids必须为整数数组。"
+            return delete_element_result
+        url = f"{self._hg_server}/api/collectionElement/batchDelete"
+        try:
+            response = self._request_api("POST", url, json_payload=json_payload)
+            if response is None:
+                self.summary["statusCode"] = 500
+                self.summary["msg"] = "批量删除元素失败，未收到API响应。"
+                return delete_element_result
+            self._hg_sdk.actionLog.info(f"delete_generic_collection_elements_by_ids():请求结果：{response.text}")
+            self.summary["statusCode"] = response.status_code
+            self.summary["msg"] = f"批量删除元素失败，服务器返回：{response.text}"
+            json_result = response.json()
+            if response.status_code == 200 and 'code' in json_result.keys():
+                self.summary["statusCode"] = json_result["code"]
+                if json_result["code"] == 200:
+                    self.summary["statusCode"] = 0
+                    self.summary["msg"] = "批量删除元素成功。"
+                    self.summary["deleted_count"] = json_result.get("result", len(json_payload))
+                    delete_element_result = True
+                elif 'msg' in json_result.keys():
+                    self.summary["msg"] = json_result["msg"]
+            elif 'code' in json_result.keys():
+                self.summary["statusCode"] = json_result["code"]
+                if 'msg' in json_result.keys():
+                    self.summary["msg"] = json_result["msg"]
         except Exception as e:
             self.summary["statusCode"] = 500
             self.summary["msg"] = f"HTTP请求失败，错误信息：{e}"

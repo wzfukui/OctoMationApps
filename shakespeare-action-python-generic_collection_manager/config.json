@@ -1,7 +1,7 @@
 {
     "name": "Generic_Collection_Manager",
     "description": "通用集合管理",
-    "app_version": "2.0.3",
+    "app_version": "2.0.6",
     "logic_language": "PYTHON",
     "min_shakespeare_version": "1.0",
     "logo": "resources/generic_collection_logo.png",
@@ -592,6 +592,189 @@
         },
         {
             "order": 8,
+            "action": "batch_delete_elements_by_ids",
+            "class_name": "batch_delete_elements_by_ids",
+            "description": "元素_按ID批量删除集合元素",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/common.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "id_str": {
+                    "data_type": "string",
+                    "description": "待删除的多个元素ID，按分隔符拆分，默认英文逗号",
+                    "default_value": "",
+                    "required": true,
+                    "order": 1
+                },
+                "split_symbol": {
+                    "data_type": "string",
+                    "description": "id_str的分隔符，默认英文逗号",
+                    "default_value": ",",
+                    "required": false,
+                    "order": 2
+                },
+                "batch_size": {
+                    "data_type": "integer",
+                    "description": "每次调用batchDelete提交的ID数量，默认1000",
+                    "default_value": 1000,
+                    "required": false,
+                    "order": 3
+                }
+            },
+            "output": [
+                {
+                    "order": 0,
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "去重并过滤空值后的待删除ID数量"
+                },
+                {
+                    "order": 1,
+                    "data_path": "action_result.data.deleted_count",
+                    "data_type": "integer",
+                    "description": "服务端返回的实际删除数量"
+                },
+                {
+                    "order": 2,
+                    "data_path": "action_result.data.delete_milliseconds",
+                    "data_type": "integer",
+                    "description": "批量删除耗时，单位毫秒"
+                },
+                {
+                    "order": 9,
+                    "data_path": "action_result.summary.statusCode",
+                    "data_type": "string",
+                    "description": "返回.错误码，默认：0"
+                },
+                {
+                    "order": 10,
+                    "data_path": "action_result.summary.msg",
+                    "data_type": "string",
+                    "description": "返回错误消息"
+                }
+            ]
+        },
+        {
+            "order": 9,
+            "action": "batch_delete_elements_by_value",
+            "class_name": "batch_delete_elements_by_value",
+            "description": "元素_批量删除集合中的多个value",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/common.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "collection_name": {
+                    "data_type": "string",
+                    "description": "集合名称，例：BLACKLIST，不能为空",
+                    "default_value": "",
+                    "required": true,
+                    "order": 1
+                },
+                "value_str": {
+                    "data_type": "string",
+                    "description": "待删除的多个value，按分隔符拆分，默认英文逗号",
+                    "default_value": "",
+                    "required": true,
+                    "order": 2
+                },
+                "split_symbol": {
+                    "data_type": "string",
+                    "description": "value_str的分隔符，默认英文逗号",
+                    "default_value": ",",
+                    "required": false,
+                    "order": 3
+                },
+                "delete_mode": {
+                    "data_type": "string",
+                    "description": "删除模式：lookup_ids_then_batch_delete先并发查ID再批量删除；direct_by_value逐个按value直删",
+                    "default_value": "lookup_ids_then_batch_delete",
+                    "required": false,
+                    "order": 4
+                },
+                "parallel_count": {
+                    "data_type": "integer",
+                    "description": "lookup_ids_then_batch_delete模式下并发查ID数量，默认5，最大20",
+                    "default_value": 5,
+                    "required": false,
+                    "order": 5
+                },
+                "batch_size": {
+                    "data_type": "integer",
+                    "description": "每次调用batchDelete提交的ID数量，默认1000",
+                    "default_value": 1000,
+                    "required": false,
+                    "order": 6
+                }
+            },
+            "output": [
+                {
+                    "order": 0,
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "去重并过滤空值后的待删除value数量"
+                },
+                {
+                    "order": 1,
+                    "data_path": "action_result.data.success_count",
+                    "data_type": "integer",
+                    "description": "删除成功的value数量"
+                },
+                {
+                    "order": 2,
+                    "data_path": "action_result.data.failed_count",
+                    "data_type": "integer",
+                    "description": "删除失败的value数量"
+                },
+                {
+                    "order": 3,
+                    "data_path": "action_result.data.success_values",
+                    "data_type": "jsonArray",
+                    "description": "删除成功的value明细"
+                },
+                {
+                    "order": 4,
+                    "data_path": "action_result.data.failed_values",
+                    "data_type": "jsonArray",
+                    "description": "删除失败的value明细"
+                },
+                {
+                    "order": 5,
+                    "data_path": "action_result.data.deleted_count",
+                    "data_type": "integer",
+                    "description": "服务端返回的实际删除数量"
+                },
+                {
+                    "order": 6,
+                    "data_path": "action_result.data.lookup_milliseconds",
+                    "data_type": "integer",
+                    "description": "查ID耗时，单位毫秒"
+                },
+                {
+                    "order": 7,
+                    "data_path": "action_result.data.delete_milliseconds",
+                    "data_type": "integer",
+                    "description": "批量删除耗时，单位毫秒"
+                },
+                {
+                    "order": 9,
+                    "data_path": "action_result.summary.statusCode",
+                    "data_type": "string",
+                    "description": "返回.错误码，默认：0"
+                },
+                {
+                    "order": 10,
+                    "data_path": "action_result.summary.msg",
+                    "data_type": "string",
+                    "description": "返回错误消息"
+                }
+            ]
+        },
+        {
+            "order": 10,
             "action": "check_generic_collection_element_exists",
             "class_name": "check_generic_collection_element_exists",
             "description": "元素_判断元素在集合中是否存在",
