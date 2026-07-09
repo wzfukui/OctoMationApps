@@ -1,0 +1,370 @@
+{
+    "name": "xswitch",
+    "description": "离线模拟交换机 MAC、ARP、接口状态和端口阻断/恢复能力",
+    "app_version": "1.0.0",
+    "jar": "xswitch.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/xswitch_logo.svg",
+    "category": "网络设备",
+    "product_name": "XSwitch 交换机",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/xswitch.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "scenario_seed": {
+            "data_type": "string",
+            "description": "模拟数据种子，可用于固定演示场景",
+            "default_value": "x-series-default",
+            "required": false,
+            "order": 2
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 3
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 4
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "健康检查",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.msg",
+                    "data_type": "string",
+                    "description": "健康检查信息"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "系统信息"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "query_mac_table",
+            "class_name": "query_mac_table",
+            "description": "查询 MAC 地址表",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_mac_table.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "mac": {
+                    "data_type": "string",
+                    "description": "MAC 地址",
+                    "required": false,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "query_arp_table",
+            "class_name": "query_arp_table",
+            "description": "查询 ARP 表",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_arp_table.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "IP 地址",
+                    "required": false,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "query_interface_status",
+            "class_name": "query_interface_status",
+            "description": "查询接口状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_interface_status.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "interface": {
+                    "data_type": "string",
+                    "description": "接口名称",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "disable_port",
+            "class_name": "disable_port",
+            "description": "关闭交换机端口",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/disable_port.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "interface": {
+                    "data_type": "string",
+                    "description": "接口名称",
+                    "required": true,
+                    "order": 0
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "关闭原因",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "安全处置"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "enable_port",
+            "class_name": "enable_port",
+            "description": "恢复交换机端口",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/enable_port.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "interface": {
+                    "data_type": "string",
+                    "description": "接口名称",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "query_operation_history",
+            "class_name": "query_operation_history",
+            "description": "查询模拟操作历史",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_operation_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "目标对象，可填写 IP、主机名、用户、工单号等",
+                    "required": false,
+                    "order": 0
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回结果数量限制",
+                    "required": false,
+                    "order": 1,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        }
+    ]
+}

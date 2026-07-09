@@ -1,0 +1,520 @@
+{
+    "name": "xldap",
+    "description": "离线模拟 LDAP/AD 目录服务，支持用户、组织、用户组和账号状态管理",
+    "app_version": "1.0.0",
+    "jar": "xldap.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/xldap_logo.svg",
+    "category": "IT系统",
+    "product_name": "XLDAP 目录服务",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/xldap.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "scenario_seed": {
+            "data_type": "string",
+            "description": "模拟数据种子，可用于固定演示场景",
+            "default_value": "x-series-default",
+            "required": false,
+            "order": 2
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 3
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 4
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "健康检查",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.msg",
+                    "data_type": "string",
+                    "description": "健康检查信息"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "系统信息"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "query_user",
+            "class_name": "query_user",
+            "description": "查询 LDAP 用户信息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_user.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "query_group",
+            "class_name": "query_group",
+            "description": "查询 LDAP 用户组信息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_group.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "group_name": {
+                    "data_type": "string",
+                    "description": "用户组名称",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "query_user_groups",
+            "class_name": "query_user_groups",
+            "description": "查询用户所属组",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_user_groups.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "create_user",
+            "class_name": "create_user",
+            "description": "创建 LDAP 用户",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/create_user.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                },
+                "display_name": {
+                    "data_type": "string",
+                    "description": "显示名",
+                    "required": false,
+                    "order": 1,
+                    "default_value": ""
+                },
+                "department": {
+                    "data_type": "string",
+                    "description": "部门",
+                    "required": false,
+                    "order": 2,
+                    "default_value": "未分配"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "disable_user",
+            "class_name": "disable_user",
+            "description": "禁用 LDAP 用户",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/disable_user.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "禁用原因",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "安全事件处置"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "enable_user",
+            "class_name": "enable_user",
+            "description": "启用 LDAP 用户",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/enable_user.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 7,
+            "action": "reset_password",
+            "class_name": "reset_password",
+            "description": "重置 LDAP 用户密码",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/reset_password.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "重置原因",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "账号风险处置"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 8,
+            "action": "add_user_to_group",
+            "class_name": "add_user_to_group",
+            "description": "将用户加入用户组",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/add_user_to_group.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "username": {
+                    "data_type": "string",
+                    "description": "用户名",
+                    "required": true,
+                    "order": 0
+                },
+                "group_name": {
+                    "data_type": "string",
+                    "description": "用户组名称",
+                    "required": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 9,
+            "action": "query_operation_history",
+            "class_name": "query_operation_history",
+            "description": "查询模拟操作历史",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_operation_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "目标对象，可填写 IP、主机名、用户、工单号等",
+                    "required": false,
+                    "order": 0
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回结果数量限制",
+                    "required": false,
+                    "order": 1,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        }
+    ]
+}

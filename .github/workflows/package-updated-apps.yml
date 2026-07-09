@@ -1,0 +1,83 @@
+name: Package updated Shakespeare apps
+
+on:
+  push:
+    paths-ignore:
+      - "release/**"
+  workflow_dispatch:
+    inputs:
+      app_dirs:
+        description: "Optional app directories to package, separated by comma or whitespace"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare packaging inputs
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "BASE_SHA=" >> "$GITHUB_ENV"
+            echo "APP_DIRS=${{ inputs.app_dirs }}" >> "$GITHUB_ENV"
+          else
+            echo "BASE_SHA=${{ github.event.before }}" >> "$GITHUB_ENV"
+            echo "APP_DIRS=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Guard against env files and secrets
+        shell: bash
+        run: python3 tools/check_no_secrets.py
+
+      - name: Package changed app directories
+        shell: bash
+        run: |
+          python3 tools/package_updated_apps.py \
+            --base "$BASE_SHA" \
+            --head "$GITHUB_SHA" \
+            --apps "$APP_DIRS" \
+            --output-dir release \
+            --manifest release/packaged-apps.json
+
+      - name: Detect release changes
+        id: release_changes
+        shell: bash
+        run: |
+          if [[ -n "$(git status --short release 2>/dev/null)" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload packaged apps artifact
+        if: steps.release_changes.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: shakespeare-app-packages
+          path: release/
+          if-no-files-found: error
+
+      - name: Commit release packages
+        if: steps.release_changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add release/
+          git commit -m "chore: package updated Shakespeare apps [skip ci]"
+          git push

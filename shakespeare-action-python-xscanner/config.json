@@ -1,0 +1,379 @@
+{
+    "name": "xscanner",
+    "description": "离线模拟漏洞扫描器，支持目标管理、扫描任务、漏洞结果和报告生成",
+    "app_version": "1.0.0",
+    "jar": "xscanner.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/xscanner_logo.svg",
+    "category": "安全产品",
+    "product_name": "XScanner 漏洞扫描器",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/xscanner.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "scenario_seed": {
+            "data_type": "string",
+            "description": "模拟数据种子，可用于固定演示场景",
+            "default_value": "x-series-default",
+            "required": false,
+            "order": 2
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 3
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 4
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "健康检查",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.msg",
+                    "data_type": "string",
+                    "description": "健康检查信息"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "系统信息"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "add_scan_target",
+            "class_name": "add_scan_target",
+            "description": "新增扫描目标",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/add_scan_target.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "扫描目标 IP/域名",
+                    "required": true,
+                    "order": 0
+                },
+                "owner": {
+                    "data_type": "string",
+                    "description": "负责人",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "secops"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "start_scan",
+            "class_name": "start_scan",
+            "description": "启动扫描任务",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/start_scan.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "扫描目标",
+                    "required": true,
+                    "order": 0
+                },
+                "profile": {
+                    "data_type": "string",
+                    "description": "扫描模板",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "full"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "query_scan_status",
+            "class_name": "query_scan_status",
+            "description": "查询扫描状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_scan_status.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "扫描目标",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "query_vulnerabilities",
+            "class_name": "query_vulnerabilities",
+            "description": "查询漏洞结果",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_vulnerabilities.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "severity": {
+                    "data_type": "string",
+                    "description": "漏洞等级",
+                    "required": false,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "generate_report",
+            "class_name": "generate_report",
+            "description": "生成扫描报告",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/generate_report.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "扫描目标",
+                    "required": true,
+                    "order": 0
+                },
+                "format": {
+                    "data_type": "string",
+                    "description": "报告格式",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "pdf"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "query_operation_history",
+            "class_name": "query_operation_history",
+            "description": "查询模拟操作历史",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_operation_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "target": {
+                    "data_type": "string",
+                    "description": "目标对象，可填写 IP、主机名、用户、工单号等",
+                    "required": false,
+                    "order": 0
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回结果数量限制",
+                    "required": false,
+                    "order": 1,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        }
+    ]
+}

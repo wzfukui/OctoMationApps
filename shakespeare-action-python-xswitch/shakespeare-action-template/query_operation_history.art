@@ -1,0 +1,73 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+  <div class="ant-table-content">
+    <div class="ant-table-body">
+      {{each action_results action_result}}
+      <div style="margin-bottom: 16px;">
+        <h3 style="color: #1890ff; margin-bottom: 8px;">XSwitch 交换机 - 查询模拟操作历史</h3>
+        <div style="background: #f6ffed; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+          <strong>执行结果: </strong>
+          {{if action_result.code == 200}}
+            <span style="color: #52c41a;">{{action_result.data.result || action_result.data.msg || "成功"}}</span>
+          {{else}}
+            <span style="color: #f5222d;">{{action_result.msg}}</span>
+          {{/if}}
+        </div>
+      </div>
+
+      {{if action_result.data.operation}}
+      <table style="margin-bottom: 12px;">
+        <thead class="ant-table-thead"><tr><th>操作项</th><th>值</th></tr></thead>
+        <tbody class="ant-table-tbody">
+          <tr><td>操作ID</td><td><code>{{action_result.data.operation.operation_id}}</code></td></tr>
+          <tr><td>目标</td><td>{{action_result.data.operation.target}}</td></tr>
+          <tr><td>状态</td><td>{{action_result.data.operation.status}}</td></tr>
+          <tr><td>影响记录</td><td>{{action_result.data.operation.affected_count}}</td></tr>
+          <tr><td>模拟耗时</td><td>{{action_result.data.operation.latency_seconds}} 秒</td></tr>
+        </tbody>
+      </table>
+      {{/if}}
+
+      {{if action_result.data.system_info}}
+      <table style="margin-bottom: 12px;">
+        <thead class="ant-table-thead"><tr><th>系统信息</th><th>值</th></tr></thead>
+        <tbody class="ant-table-tbody">
+          <tr><td>产品</td><td>{{action_result.data.system_info.product}}</td></tr>
+          <tr><td>状态</td><td>{{action_result.data.system_info.status}}</td></tr>
+          <tr><td>记录数</td><td>{{action_result.data.system_info.record_count}}</td></tr>
+          <tr><td>数据库</td><td><code>{{action_result.data.system_info.database_path}}</code></td></tr>
+          <tr><td>样例负责人</td><td>{{action_result.data.system_info.sample_values.owners || "-"}}</td></tr>
+          <tr><td>样例用户</td><td>{{action_result.data.system_info.sample_values.users || "-"}}</td></tr>
+          <tr><td>样例 IP</td><td>{{action_result.data.system_info.sample_values.ips || "-"}}</td></tr>
+        </tbody>
+      </table>
+      {{/if}}
+
+      {{if action_result.data.records && action_result.data.records.length > 0}}
+      <table>
+        <thead class="ant-table-thead">
+          <tr><th>ID</th><th>类型</th><th>名称</th><th>负责人</th><th>用户/账号</th><th>IP/指标</th><th>状态</th><th>等级</th><th>关键信息</th><th>摘要</th></tr>
+        </thead>
+        <tbody class="ant-table-tbody">
+          {{each action_result.data.records record}}
+          <tr class="ant-table-row">
+            <td><code>{{record.id}}</code></td>
+            <td>{{record.type || "-"}}</td>
+            <td>{{record.name}}</td>
+            <td>{{record.owner || "-"}}</td>
+            <td>{{record.user || "-"}}</td>
+            <td>{{record.ip || record.indicator || "-"}}</td>
+            <td>{{record.status}}</td>
+            <td>{{record.severity}}</td>
+            <td>{{record.key_info || "-"}}</td>
+            <td>{{record.summary}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      {{else if action_result.data.total_count == 0}}
+      <div style="text-align: center; padding: 24px; color: #8c8c8c;">没有匹配记录</div>
+      {{/if}}
+      {{/each}}
+    </div>
+  </div>
+</div>
