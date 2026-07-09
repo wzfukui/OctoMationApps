@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# macOS metadata
+.DS_Store
+
+# Temporary packaged Shakespeare apps
+/*.zip
+
 # C extensions
 *.so
 
@@ -123,12 +129,31 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
+!.env.sample
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Secrets, credentials, and local runtime state
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+*.jks
+*.keystore
+*_access_token.json
+*credentials*.json
+*credential*.json
+*.db
+*.sqlite
+*.sqlite3
 
 # Spyder project settings
 .spyderproject

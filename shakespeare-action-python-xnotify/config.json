@@ -1,0 +1,386 @@
+{
+    "name": "xnotify",
+    "description": "离线模拟通知服务，支持企业微信、邮件、短信式通知与投递状态查询",
+    "app_version": "1.0.0",
+    "jar": "xnotify.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/xnotify_logo.svg",
+    "category": "SaaS服务",
+    "product_name": "XNotify 通知系统",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/xnotify.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "scenario_seed": {
+            "data_type": "string",
+            "description": "模拟数据种子，可用于固定演示场景",
+            "default_value": "x-series-default",
+            "required": false,
+            "order": 2
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 3
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写入/处置动作的最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 4
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "健康检查",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.msg",
+                    "data_type": "string",
+                    "description": "健康检查信息"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "系统信息"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "send_message",
+            "class_name": "send_message",
+            "description": "发送企业微信式消息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/send_message.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "notify",
+            "parameters": {
+                "recipient": {
+                    "data_type": "string",
+                    "description": "接收人",
+                    "required": true,
+                    "order": 0
+                },
+                "message": {
+                    "data_type": "string",
+                    "description": "消息内容",
+                    "required": true,
+                    "order": 1
+                },
+                "severity": {
+                    "data_type": "string",
+                    "description": "消息等级",
+                    "required": false,
+                    "order": 2,
+                    "default_value": "info"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "send_email",
+            "class_name": "send_email",
+            "description": "发送邮件式通知",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/send_email.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "notify",
+            "parameters": {
+                "recipient": {
+                    "data_type": "string",
+                    "description": "邮箱",
+                    "required": true,
+                    "order": 0
+                },
+                "subject": {
+                    "data_type": "string",
+                    "description": "邮件主题",
+                    "required": true,
+                    "order": 1
+                },
+                "message": {
+                    "data_type": "string",
+                    "description": "邮件内容",
+                    "required": true,
+                    "order": 2
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "send_sms",
+            "class_name": "send_sms",
+            "description": "发送短信式通知",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/send_sms.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "notify",
+            "parameters": {
+                "recipient": {
+                    "data_type": "string",
+                    "description": "手机号",
+                    "required": true,
+                    "order": 0
+                },
+                "message": {
+                    "data_type": "string",
+                    "description": "短信内容",
+                    "required": true,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "query_notification_history",
+            "class_name": "query_notification_history",
+            "description": "查询通知历史",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_notification_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "recipient": {
+                    "data_type": "string",
+                    "description": "接收人",
+                    "required": false,
+                    "order": 0
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 1,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.history_records",
+                    "data_type": "jsonarray",
+                    "description": "操作历史"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "query_delivery_status",
+            "class_name": "query_delivery_status",
+            "description": "查询投递状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_delivery_status.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "notification_id": {
+                    "data_type": "string",
+                    "description": "通知 ID",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "查询结果"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.statistics",
+                    "data_type": "jsonobject",
+                    "description": "统计信息"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "register_channel",
+            "class_name": "register_channel",
+            "description": "注册通知通道",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/register_channel.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "channel_name": {
+                    "data_type": "string",
+                    "description": "通道名称",
+                    "required": true,
+                    "order": 0
+                },
+                "channel_type": {
+                    "data_type": "string",
+                    "description": "通道类型",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "webhook"
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "模拟操作信息"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "受影响记录"
+                }
+            ]
+        }
+    ]
+}

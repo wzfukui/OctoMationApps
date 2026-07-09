@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="XAsset 资产管理">
+  <rect width="512" height="512" rx="92" fill="#0f766e"/>
+  <path d="M256 54 404 118v112c0 95-59 178-148 228-89-50-148-133-148-228V118L256 54Z" fill="#14b8a6"/>
+  <path d="M256 92 366 140v88c0 71-41 135-110 176-69-41-110-105-110-176v-88l110-48Z" fill="#ffffff" opacity="0.94"/>
+  <circle cx="256" cy="256" r="92" fill="#0f766e"/>
+  <text x="256" y="292" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="116" font-weight="700" fill="#ffffff">A</text>
+  <path d="M134 414h244" stroke="#ffffff" stroke-width="24" stroke-linecap="round" opacity="0.72"/>
+</svg>
