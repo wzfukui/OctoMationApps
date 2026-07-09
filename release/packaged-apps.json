@@ -1,6 +1,16 @@
 {
   "packages": [
     {
+      "app": "shakespeare-action-python-Scamalytics",
+      "zip": "release/shakespeare-action-python-Scamalytics.zip",
+      "files": 6
+    },
+    {
+      "app": "shakespeare-action-python-hillstonenet_ti",
+      "zip": "release/shakespeare-action-python-hillstonenet_ti.zip",
+      "files": 9
+    },
+    {
       "app": "shakespeare-action-python-xasset",
       "zip": "release/shakespeare-action-python-xasset.zip",
       "files": 14
