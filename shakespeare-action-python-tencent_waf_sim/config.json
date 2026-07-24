@@ -1,0 +1,642 @@
+{
+    "name": "tencent_waf_sim",
+    "description": "离线模拟腾讯云 WAF 的域名防护、攻击事件、IP 黑名单、解封和 TTL 审计能力",
+    "app_version": "1.0.0",
+    "jar": "tencent_waf_sim.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/tencent_waf_sim_logo.svg",
+    "category": "安全产品",
+    "product_name": "腾讯云 WAF（模拟）",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/tencent_waf_sim.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写动作最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 2
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写动作最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 3
+        },
+        "simulated_api_status": {
+            "data_type": "string",
+            "description": "模拟 API 状态：healthy、degraded、unavailable",
+            "default_value": "healthy",
+            "required": false,
+            "order": 4
+        },
+        "simulated_auth_status": {
+            "data_type": "string",
+            "description": "模拟鉴权状态：authorized、forbidden",
+            "default_value": "authorized",
+            "required": false,
+            "order": 5
+        },
+        "simulated_link_status": {
+            "data_type": "string",
+            "description": "模拟链路状态：healthy、delayed、down",
+            "default_value": "healthy",
+            "required": false,
+            "order": 6
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "检查模拟 API、鉴权和组件状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "产品和链路健康状态"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "list_protected_domains",
+            "class_name": "list_protected_domains",
+            "description": "查询 WAF 受保护域名",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/list_protected_domains.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "domain": {
+                    "data_type": "string",
+                    "description": "受保护域名",
+                    "required": false,
+                    "order": 0
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "防护状态",
+                    "required": false,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "query_attack_events",
+            "class_name": "query_attack_events",
+            "description": "查询 Web 攻击事件",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_attack_events.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "source_ip": {
+                    "data_type": "string",
+                    "description": "攻击源 IP",
+                    "required": false,
+                    "order": 0
+                },
+                "domain": {
+                    "data_type": "string",
+                    "description": "受攻击域名",
+                    "required": false,
+                    "order": 1
+                },
+                "severity": {
+                    "data_type": "string",
+                    "description": "告警等级",
+                    "required": false,
+                    "order": 2
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR trace_id",
+                    "required": false,
+                    "order": 3
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 4,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "list_ip_block_policies",
+            "class_name": "list_ip_block_policies",
+            "description": "查询 WAF IP 黑名单策略",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/list_ip_block_policies.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "policy_id": {
+                    "data_type": "string",
+                    "description": "策略 ID",
+                    "required": false,
+                    "order": 0
+                },
+                "ip": {
+                    "data_type": "string",
+                    "description": "来源 IP",
+                    "required": false,
+                    "order": 1
+                },
+                "domain": {
+                    "data_type": "string",
+                    "description": "防护域名",
+                    "required": false,
+                    "order": 2
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "策略状态",
+                    "required": false,
+                    "order": 3
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR trace_id",
+                    "required": false,
+                    "order": 4
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 5,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "block_source_ip",
+            "class_name": "block_source_ip",
+            "description": "在指定 WAF 域名上封禁攻击源 IP",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/block_source_ip.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "需要封禁的 IP",
+                    "required": true,
+                    "order": 0
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "封禁原因",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "SOAR 高危告警联动"
+                },
+                "ttl_minutes": {
+                    "data_type": "integer",
+                    "description": "封禁时长（分钟），0 表示永久",
+                    "required": false,
+                    "order": 2,
+                    "default_value": 60
+                },
+                "domain": {
+                    "data_type": "string",
+                    "description": "WAF 防护域名",
+                    "required": true,
+                    "order": 3
+                },
+                "alert_id": {
+                    "data_type": "string",
+                    "description": "关联 SOC 告警 ID",
+                    "required": false,
+                    "order": 4
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 10,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 11,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 12,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 13
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.policy_id",
+                    "data_type": "string",
+                    "description": "策略 ID"
+                },
+                {
+                    "data_path": "action_result.data.policy",
+                    "data_type": "jsonobject",
+                    "description": "策略详情"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "unblock_source_ip",
+            "class_name": "unblock_source_ip",
+            "description": "解除 WAF 攻击源 IP 封禁",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/unblock_source_ip.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "policy_id": {
+                    "data_type": "string",
+                    "description": "策略 ID；与目标至少填写一项",
+                    "required": false,
+                    "order": 0
+                },
+                "ip": {
+                    "data_type": "string",
+                    "description": "需要解封的 IP；与策略 ID 至少填写一项",
+                    "required": false,
+                    "order": 1
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "解封原因",
+                    "required": false,
+                    "order": 2,
+                    "default_value": "TTL 到期或人工复核"
+                },
+                "domain": {
+                    "data_type": "string",
+                    "description": "WAF 防护域名",
+                    "required": false,
+                    "order": 3
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 10,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 11,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 12,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 13
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.policy_id",
+                    "data_type": "string",
+                    "description": "策略 ID"
+                },
+                {
+                    "data_path": "action_result.data.policy",
+                    "data_type": "jsonobject",
+                    "description": "策略详情"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "expire_due_policies",
+            "class_name": "expire_due_policies",
+            "description": "扫描并解除已到期 WAF IP 策略",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/expire_due_policies.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "as_of": {
+                    "data_type": "string",
+                    "description": "到期判断时间，ISO 8601；默认当前时间",
+                    "required": false,
+                    "order": 0
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 10,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 11,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 12,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 13
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.policy_id",
+                    "data_type": "string",
+                    "description": "策略 ID"
+                },
+                {
+                    "data_path": "action_result.data.policy",
+                    "data_type": "jsonobject",
+                    "description": "策略详情"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 7,
+            "action": "query_operation_history",
+            "class_name": "query_operation_history",
+            "description": "查询产品模拟操作审计记录",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_operation_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "按 trace_id 过滤",
+                    "required": false,
+                    "order": 0
+                },
+                "target": {
+                    "data_type": "string",
+                    "description": "按目标 IP、资产或策略 ID 过滤",
+                    "required": false,
+                    "order": 1
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 2,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        }
+    ]
+}

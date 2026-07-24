@@ -1,0 +1,34 @@
+<div class="ant-table ant-table-default ant-table-bordered">
+  <div class="ant-table-content"><div class="ant-table-body">
+    {{each action_results action_result}}
+    <h3 style="color:#0052d9;margin:0 0 8px;">腾讯天幕 NIPS（模拟） - 查询旁路阻断策略</h3>
+    <div style="padding:10px;background:#f6ffed;margin-bottom:12px;">
+      <strong>执行结果：</strong>
+      {{if action_result.code == 200}}<span style="color:#389e0d;">{{action_result.data.result || action_result.data.msg || "成功"}}</span>
+      {{else}}<span style="color:#cf1322;">{{action_result.msg}}</span>{{/if}}
+    </div>
+
+    {{if action_result.data.system_info}}
+    <table style="margin-bottom:12px;"><thead class="ant-table-thead"><tr><th>产品</th><th>API</th><th>鉴权</th><th>链路</th><th>记录</th><th>策略</th><th>状态库</th></tr></thead>
+      <tbody class="ant-table-tbody"><tr><td>{{action_result.data.system_info.product}}</td><td>{{action_result.data.system_info.api_status}}</td><td>{{action_result.data.system_info.auth_status}}</td><td>{{action_result.data.system_info.link_status}}</td><td>{{action_result.data.system_info.record_count}}</td><td>{{action_result.data.system_info.policy_count}}</td><td><code>{{action_result.data.system_info.database_path}}</code></td></tr></tbody>
+    </table>{{/if}}
+
+    {{if action_result.data.policy}}
+    <table style="margin-bottom:12px;"><thead class="ant-table-thead"><tr><th>策略 ID</th><th>目标</th><th>状态</th><th>到期时间</th><th>trace_id</th><th>操作者</th></tr></thead>
+      <tbody class="ant-table-tbody"><tr><td><code>{{action_result.data.policy.id}}</code></td><td>{{action_result.data.policy.target || action_result.data.policy.ip}}</td><td>{{action_result.data.policy.status}}</td><td>{{action_result.data.policy.expires_at || "永久"}}</td><td><code>{{action_result.data.policy.trace_id || "-"}}</code></td><td>{{action_result.data.policy.operator || action_result.data.policy.owner}}</td></tr></tbody>
+    </table>{{/if}}
+
+    {{if action_result.data.operation}}
+    <table style="margin-bottom:12px;"><thead class="ant-table-thead"><tr><th>操作 ID</th><th>动作</th><th>目标</th><th>状态</th><th>trace_id</th><th>触发源</th></tr></thead>
+      <tbody class="ant-table-tbody"><tr><td><code>{{action_result.data.operation.operation_id}}</code></td><td>{{action_result.data.operation.action}}</td><td>{{action_result.data.operation.target}}</td><td>{{action_result.data.operation.status}}</td><td><code>{{action_result.data.operation.trace_id || "-"}}</code></td><td>{{action_result.data.operation.trigger_source}}</td></tr></tbody>
+    </table>{{/if}}
+
+    {{if action_result.data.records && action_result.data.records.length > 0}}
+    <table><thead class="ant-table-thead"><tr><th>ID</th><th>类型</th><th>名称</th><th>源 IP</th><th>目的 IP</th><th>资产/业务</th><th>负责人</th><th>状态</th><th>等级</th><th>置信度</th><th>trace_id</th><th>摘要</th></tr></thead>
+      <tbody class="ant-table-tbody">{{each action_result.data.records record}}<tr>
+        <td><code>{{record.id}}</code></td><td>{{record.kind}}</td><td>{{record.name}}</td><td>{{record.src_ip || record.ip || "-"}}</td><td>{{record.dst_ip || "-"}}</td><td>{{record.asset_id || record.business_id || "-"}}</td><td>{{record.owner || record.owner_account || "-"}}</td><td>{{record.status}}</td><td>{{record.severity}}</td><td>{{record.confidence || "-"}}</td><td><code>{{record.trace_id || "-"}}</code></td><td>{{record.summary}}</td>
+      </tr>{{/each}}</tbody>
+    </table>{{else if action_result.data.total_count == 0}}<div style="padding:20px;text-align:center;color:#8c8c8c;">没有匹配记录</div>{{/if}}
+    {{/each}}
+  </div></div>
+</div>

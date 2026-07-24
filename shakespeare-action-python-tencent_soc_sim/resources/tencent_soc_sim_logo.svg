@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="腾讯云 SOC（模拟）">
+  <rect width="512" height="512" rx="64" fill="#0052d9"/>
+  <path d="M256 54 408 120v112c0 101-62 184-152 228-90-44-152-127-152-228V120L256 54Z" fill="#00a4ff"/>
+  <path d="M256 96 366 144v86c0 73-42 134-110 171-68-37-110-98-110-171v-86l110-48Z" fill="#ffffff" opacity="0.96"/>
+  <circle cx="256" cy="242" r="82" fill="#0052d9"/>
+  <text x="256" y="276" text-anchor="middle" font-family="Arial, sans-serif" font-size="104" font-weight="700" fill="#ffffff">S</text>
+  <rect x="176" y="354" width="160" height="54" rx="8" fill="#0052d9"/>
+  <text x="256" y="391" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">SIM</text>
+</svg>

@@ -1,0 +1,640 @@
+{
+    "name": "tencent_soc_sim",
+    "description": "离线模拟腾讯云 SOC 的告警汇聚、事件分级、链路健康和处置回写能力",
+    "app_version": "1.0.0",
+    "jar": "tencent_soc_sim.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/tencent_soc_sim_logo.svg",
+    "category": "安全产品",
+    "product_name": "腾讯云 SOC（模拟）",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/tencent_soc_sim.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写动作最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 2
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写动作最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 3
+        },
+        "simulated_api_status": {
+            "data_type": "string",
+            "description": "模拟 API 状态：healthy、degraded、unavailable",
+            "default_value": "healthy",
+            "required": false,
+            "order": 4
+        },
+        "simulated_auth_status": {
+            "data_type": "string",
+            "description": "模拟鉴权状态：authorized、forbidden",
+            "default_value": "authorized",
+            "required": false,
+            "order": 5
+        },
+        "simulated_link_status": {
+            "data_type": "string",
+            "description": "模拟链路状态：healthy、delayed、down",
+            "default_value": "healthy",
+            "required": false,
+            "order": 6
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "检查模拟 API、鉴权和组件状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "产品和链路健康状态"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "query_ingestion_health",
+            "class_name": "query_ingestion_health",
+            "description": "查询 Syslog/Kafka 告警外发链路和最近告警时间",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_ingestion_health.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "产品和链路健康状态"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "fetch_high_risk_alerts",
+            "class_name": "fetch_high_risk_alerts",
+            "description": "拉取待处置的高危告警",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/fetch_high_risk_alerts.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "severity": {
+                    "data_type": "string",
+                    "description": "告警等级",
+                    "required": false,
+                    "order": 0,
+                    "default_value": "critical"
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "告警状态",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "new"
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 2,
+                    "default_value": 20
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "query_alert_detail",
+            "class_name": "query_alert_detail",
+            "description": "根据告警 ID 查询完整处置上下文",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_alert_detail.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "alert_id": {
+                    "data_type": "string",
+                    "description": "SOC 告警 ID",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "emit_demo_alert",
+            "class_name": "emit_demo_alert",
+            "description": "生成一条手动演示告警",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/emit_demo_alert.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "alert_id": {
+                    "data_type": "string",
+                    "description": "告警 ID；不填则自动生成",
+                    "required": false,
+                    "order": 0
+                },
+                "alert_name": {
+                    "data_type": "string",
+                    "description": "告警名称",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "手动演示高危告警"
+                },
+                "alert_type": {
+                    "data_type": "string",
+                    "description": "告警类型",
+                    "required": false,
+                    "order": 2,
+                    "default_value": "web_attack"
+                },
+                "src_ip": {
+                    "data_type": "string",
+                    "description": "攻击源 IP",
+                    "required": false,
+                    "order": 3,
+                    "default_value": "203.0.113.77"
+                },
+                "dst_ip": {
+                    "data_type": "string",
+                    "description": "受害资产 IP",
+                    "required": false,
+                    "order": 4,
+                    "default_value": "10.10.8.23"
+                },
+                "asset_id": {
+                    "data_type": "string",
+                    "description": "受害资产 ID",
+                    "required": false,
+                    "order": 5,
+                    "default_value": "asset-cvm-prod-web-01"
+                },
+                "owner": {
+                    "data_type": "string",
+                    "description": "资产负责人",
+                    "required": false,
+                    "order": 6,
+                    "default_value": "alice"
+                },
+                "severity": {
+                    "data_type": "string",
+                    "description": "告警等级",
+                    "required": false,
+                    "order": 7,
+                    "default_value": "high"
+                },
+                "confidence": {
+                    "data_type": "integer",
+                    "description": "置信度 0-100",
+                    "required": false,
+                    "order": 8,
+                    "default_value": 90
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 20,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 21,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 22,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 23
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "update_alert_status",
+            "class_name": "update_alert_status",
+            "description": "更新 SOC 告警状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/update_alert_status.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "alert_id": {
+                    "data_type": "string",
+                    "description": "SOC 告警 ID",
+                    "required": true,
+                    "order": 0
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "目标状态",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "investigating"
+                },
+                "comment": {
+                    "data_type": "string",
+                    "description": "状态说明",
+                    "required": false,
+                    "order": 2,
+                    "default_value": "SOAR 已开始处置"
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 10,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 11,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 12,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 13
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "writeback_disposition",
+            "class_name": "writeback_disposition",
+            "description": "回写跨产品处置结果和策略 ID",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/writeback_disposition.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "alert_id": {
+                    "data_type": "string",
+                    "description": "SOC 告警 ID",
+                    "required": true,
+                    "order": 0
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "处置状态",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "closed"
+                },
+                "disposition": {
+                    "data_type": "string",
+                    "description": "处置结论",
+                    "required": false,
+                    "order": 2,
+                    "default_value": "confirmed_malicious"
+                },
+                "policy_ids": {
+                    "data_type": "string",
+                    "description": "关联策略 ID，多个值用逗号分隔",
+                    "required": false,
+                    "order": 3
+                },
+                "comment": {
+                    "data_type": "string",
+                    "description": "处置说明",
+                    "required": false,
+                    "order": 4,
+                    "default_value": "已完成网络侧阻断"
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 10,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 11,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 12,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 13
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 7,
+            "action": "query_operation_history",
+            "class_name": "query_operation_history",
+            "description": "查询产品模拟操作审计记录",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_operation_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "按 trace_id 过滤",
+                    "required": false,
+                    "order": 0
+                },
+                "target": {
+                    "data_type": "string",
+                    "description": "按目标 IP、资产或策略 ID 过滤",
+                    "required": false,
+                    "order": 1
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 2,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        }
+    ]
+}

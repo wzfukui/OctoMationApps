@@ -1,104 +1,39 @@
 {
   "packages": [
     {
-      "app": "shakespeare-action-python-Scamalytics",
-      "zip": "release/shakespeare-action-python-Scamalytics.zip",
-      "files": 6
+      "app": "shakespeare-action-python-tencent_asset_sim",
+      "zip": "release/shakespeare-action-python-tencent_asset_sim.zip",
+      "files": 15
     },
     {
-      "app": "shakespeare-action-python-hillstonenet_ti",
-      "zip": "release/shakespeare-action-python-hillstonenet_ti.zip",
-      "files": 9
-    },
-    {
-      "app": "shakespeare-action-python-xasset",
-      "zip": "release/shakespeare-action-python-xasset.zip",
-      "files": 14
-    },
-    {
-      "app": "shakespeare-action-python-xav",
-      "zip": "release/shakespeare-action-python-xav.zip",
+      "app": "shakespeare-action-python-tencent_cfw_sim",
+      "zip": "release/shakespeare-action-python-tencent_cfw_sim.zip",
       "files": 11
     },
     {
-      "app": "shakespeare-action-python-xcloud",
-      "zip": "release/shakespeare-action-python-xcloud.zip",
+      "app": "shakespeare-action-python-tencent_hids_sim",
+      "zip": "release/shakespeare-action-python-tencent_hids_sim.zip",
       "files": 11
     },
     {
-      "app": "shakespeare-action-python-xfirewall",
-      "zip": "release/shakespeare-action-python-xfirewall.zip",
-      "files": 10
-    },
-    {
-      "app": "shakespeare-action-python-xhids",
-      "zip": "release/shakespeare-action-python-xhids.zip",
+      "app": "shakespeare-action-python-tencent_soc_sim",
+      "zip": "release/shakespeare-action-python-tencent_soc_sim.zip",
       "files": 12
     },
     {
-      "app": "shakespeare-action-python-xiam",
-      "zip": "release/shakespeare-action-python-xiam.zip",
+      "app": "shakespeare-action-python-tencent_tcss_sim",
+      "zip": "release/shakespeare-action-python-tencent_tcss_sim.zip",
       "files": 11
     },
     {
-      "app": "shakespeare-action-python-xjumpserver",
-      "zip": "release/shakespeare-action-python-xjumpserver.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xldap",
-      "zip": "release/shakespeare-action-python-xldap.zip",
-      "files": 14
-    },
-    {
-      "app": "shakespeare-action-python-xmail",
-      "zip": "release/shakespeare-action-python-xmail.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xnotify",
-      "zip": "release/shakespeare-action-python-xnotify.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xsandbox",
-      "zip": "release/shakespeare-action-python-xsandbox.zip",
+      "app": "shakespeare-action-python-tencent_tianmu_sim",
+      "zip": "release/shakespeare-action-python-tencent_tianmu_sim.zip",
       "files": 10
     },
     {
-      "app": "shakespeare-action-python-xscanner",
-      "zip": "release/shakespeare-action-python-xscanner.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xsiem",
-      "zip": "release/shakespeare-action-python-xsiem.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xswitch",
-      "zip": "release/shakespeare-action-python-xswitch.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xti",
-      "zip": "release/shakespeare-action-python-xti.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xticket",
-      "zip": "release/shakespeare-action-python-xticket.zip",
-      "files": 11
-    },
-    {
-      "app": "shakespeare-action-python-xvpn",
-      "zip": "release/shakespeare-action-python-xvpn.zip",
+      "app": "shakespeare-action-python-tencent_waf_sim",
+      "zip": "release/shakespeare-action-python-tencent_waf_sim.zip",
       "files": 12
-    },
-    {
-      "app": "shakespeare-action-python-xwaf",
-      "zip": "release/shakespeare-action-python-xwaf.zip",
-      "files": 11
     }
   ]
 }

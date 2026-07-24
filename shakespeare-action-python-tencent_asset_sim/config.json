@@ -1,0 +1,878 @@
+{
+    "name": "tencent_asset_sim",
+    "description": "离线模拟腾讯云主机、业务系统、负责人、VPC 和互联网暴露面资产上下文",
+    "app_version": "1.0.0",
+    "jar": "tencent_asset_sim.py",
+    "readme": "resources/readme.md",
+    "logo": "resources/tencent_asset_sim_logo.svg",
+    "category": "云服务",
+    "product_name": "腾讯云资产中心（模拟）",
+    "app_supplier": "雾帜智能",
+    "logic_language": "PYTHON",
+    "min_shakespeare_version": "1.0",
+    "logic_language_version": "3",
+    "has_test": true,
+    "test_action": "health_check",
+    "resources": "",
+    "configuration": {
+        "database_path": {
+            "data_type": "string",
+            "description": "SQLite 模拟状态库路径",
+            "default_value": "/tmp/tencent_asset_sim.db",
+            "required": false,
+            "order": 0
+        },
+        "scenario_profile": {
+            "data_type": "string",
+            "description": "模拟场景名称",
+            "default_value": "default",
+            "required": false,
+            "order": 1
+        },
+        "delay_min_seconds": {
+            "data_type": "integer",
+            "description": "写动作最小模拟延迟秒数",
+            "default_value": 1,
+            "required": false,
+            "order": 2
+        },
+        "delay_max_seconds": {
+            "data_type": "integer",
+            "description": "写动作最大模拟延迟秒数",
+            "default_value": 3,
+            "required": false,
+            "order": 3
+        },
+        "simulated_api_status": {
+            "data_type": "string",
+            "description": "模拟 API 状态：healthy、degraded、unavailable",
+            "default_value": "healthy",
+            "required": false,
+            "order": 4
+        },
+        "simulated_auth_status": {
+            "data_type": "string",
+            "description": "模拟鉴权状态：authorized、forbidden",
+            "default_value": "authorized",
+            "required": false,
+            "order": 5
+        },
+        "simulated_link_status": {
+            "data_type": "string",
+            "description": "模拟链路状态：healthy、delayed、down",
+            "default_value": "healthy",
+            "required": false,
+            "order": 6
+        }
+    },
+    "actions": [
+        {
+            "order": 0,
+            "action": "health_check",
+            "class_name": "health_check",
+            "description": "检查模拟 API、鉴权和组件状态",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/health_check.art",
+            "safe_mode": false,
+            "is_test": true,
+            "classify": "query",
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.system_info",
+                    "data_type": "jsonobject",
+                    "description": "产品和链路健康状态"
+                }
+            ]
+        },
+        {
+            "order": 1,
+            "action": "list_assets",
+            "class_name": "list_assets",
+            "description": "查询云资产列表",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/list_assets.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "asset_type": {
+                    "data_type": "string",
+                    "description": "资产类型",
+                    "required": false,
+                    "order": 0
+                },
+                "owner": {
+                    "data_type": "string",
+                    "description": "负责人账号；样例 alice、bob、platform-team",
+                    "required": false,
+                    "order": 1
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "资产状态",
+                    "required": false,
+                    "order": 2
+                },
+                "business_id": {
+                    "data_type": "string",
+                    "description": "业务系统 ID",
+                    "required": false,
+                    "order": 3
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 4,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 2,
+            "action": "query_asset_by_ip",
+            "class_name": "query_asset_by_ip",
+            "description": "根据 IP 查询主机、业务、负责人和暴露面",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_asset_by_ip.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "ip": {
+                    "data_type": "string",
+                    "description": "内网或公网 IP",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 3,
+            "action": "query_asset_by_id",
+            "class_name": "query_asset_by_id",
+            "description": "根据资产 ID 查询资产上下文",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_asset_by_id.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "asset_id": {
+                    "data_type": "string",
+                    "description": "资产 ID",
+                    "required": true,
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 4,
+            "action": "query_assets_by_owner",
+            "class_name": "query_assets_by_owner",
+            "description": "根据负责人账号查询名下资产",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_assets_by_owner.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "owner": {
+                    "data_type": "string",
+                    "description": "负责人账号；样例 alice、bob、platform-team",
+                    "required": true,
+                    "order": 0
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 1,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 5,
+            "action": "list_exposed_assets",
+            "class_name": "list_exposed_assets",
+            "description": "查询互联网暴露资产",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/list_exposed_assets.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "exposure": {
+                    "data_type": "string",
+                    "description": "暴露类型",
+                    "required": false,
+                    "order": 0,
+                    "default_value": "internet"
+                },
+                "business_id": {
+                    "data_type": "string",
+                    "description": "业务系统 ID",
+                    "required": false,
+                    "order": 1
+                },
+                "owner": {
+                    "data_type": "string",
+                    "description": "负责人账号",
+                    "required": false,
+                    "order": 2
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 3,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 6,
+            "action": "query_business_context",
+            "class_name": "query_business_context",
+            "description": "查询业务系统关联资产与负责人",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_business_context.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "business_id": {
+                    "data_type": "string",
+                    "description": "业务系统 ID",
+                    "required": true,
+                    "order": 0
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 1,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 7,
+            "action": "create_asset",
+            "class_name": "create_asset",
+            "description": "新增模拟云资产",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/create_asset.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "asset_id": {
+                    "data_type": "string",
+                    "description": "资产 ID；不填则自动生成",
+                    "required": false,
+                    "order": 0
+                },
+                "asset_name": {
+                    "data_type": "string",
+                    "description": "资产名称",
+                    "required": true,
+                    "order": 1
+                },
+                "ip": {
+                    "data_type": "string",
+                    "description": "资产内网 IP",
+                    "required": true,
+                    "order": 2
+                },
+                "asset_type": {
+                    "data_type": "string",
+                    "description": "资产类型",
+                    "required": false,
+                    "order": 3,
+                    "default_value": "cvm"
+                },
+                "owner": {
+                    "data_type": "string",
+                    "description": "负责人账号",
+                    "required": false,
+                    "order": 4,
+                    "default_value": "secops"
+                },
+                "business_id": {
+                    "data_type": "string",
+                    "description": "业务系统 ID",
+                    "required": false,
+                    "order": 5,
+                    "default_value": "biz-demo"
+                },
+                "business_name": {
+                    "data_type": "string",
+                    "description": "业务系统名称",
+                    "required": false,
+                    "order": 6,
+                    "default_value": "演示业务"
+                },
+                "exposure": {
+                    "data_type": "string",
+                    "description": "暴露类型",
+                    "required": false,
+                    "order": 7,
+                    "default_value": "private"
+                },
+                "severity": {
+                    "data_type": "string",
+                    "description": "资产等级",
+                    "required": false,
+                    "order": 8,
+                    "default_value": "medium"
+                },
+                "summary": {
+                    "data_type": "string",
+                    "description": "资产说明",
+                    "required": false,
+                    "order": 9,
+                    "default_value": "手工新增模拟云资产"
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 20,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 21,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 22,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 23
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 8,
+            "action": "update_asset",
+            "class_name": "update_asset",
+            "description": "更新模拟云资产信息",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/update_asset.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "asset_id": {
+                    "data_type": "string",
+                    "description": "资产 ID",
+                    "required": true,
+                    "order": 0
+                },
+                "asset_name": {
+                    "data_type": "string",
+                    "description": "资产名称",
+                    "required": false,
+                    "order": 1
+                },
+                "owner": {
+                    "data_type": "string",
+                    "description": "负责人账号",
+                    "required": false,
+                    "order": 2
+                },
+                "business_id": {
+                    "data_type": "string",
+                    "description": "业务系统 ID",
+                    "required": false,
+                    "order": 3
+                },
+                "business_name": {
+                    "data_type": "string",
+                    "description": "业务系统名称",
+                    "required": false,
+                    "order": 4
+                },
+                "exposure": {
+                    "data_type": "string",
+                    "description": "暴露类型",
+                    "required": false,
+                    "order": 5
+                },
+                "status": {
+                    "data_type": "string",
+                    "description": "资产状态",
+                    "required": false,
+                    "order": 6
+                },
+                "severity": {
+                    "data_type": "string",
+                    "description": "资产等级",
+                    "required": false,
+                    "order": 7
+                },
+                "summary": {
+                    "data_type": "string",
+                    "description": "资产说明",
+                    "required": false,
+                    "order": 8
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 20,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 21,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 22,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 23
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 9,
+            "action": "delete_asset",
+            "class_name": "delete_asset",
+            "description": "删除模拟云资产",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/delete_asset.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "write",
+            "parameters": {
+                "asset_id": {
+                    "data_type": "string",
+                    "description": "资产 ID",
+                    "required": true,
+                    "order": 0
+                },
+                "reason": {
+                    "data_type": "string",
+                    "description": "删除原因",
+                    "required": false,
+                    "order": 1,
+                    "default_value": "资产下线"
+                },
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "SOAR 链路追踪 ID",
+                    "required": false,
+                    "order": 10,
+                    "default_value": "demo-trace-web-0001"
+                },
+                "operator": {
+                    "data_type": "string",
+                    "description": "操作者账号",
+                    "required": false,
+                    "order": 11,
+                    "default_value": "soar-demo"
+                },
+                "trigger_source": {
+                    "data_type": "string",
+                    "description": "触发来源，例如 soc_alert、manual、scheduled",
+                    "required": false,
+                    "order": 12,
+                    "default_value": "soc_alert"
+                },
+                "approval_id": {
+                    "data_type": "string",
+                    "description": "审批单 ID；需要审批时由剧本传入",
+                    "required": false,
+                    "order": 13
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        },
+        {
+            "order": 10,
+            "action": "query_operation_history",
+            "class_name": "query_operation_history",
+            "description": "查询产品模拟操作审计记录",
+            "result_display_tmpt_type": "js",
+            "result_display_tmpt": "shakespeare-action-template/query_operation_history.art",
+            "safe_mode": false,
+            "is_test": false,
+            "classify": "query",
+            "parameters": {
+                "trace_id": {
+                    "data_type": "string",
+                    "description": "按 trace_id 过滤",
+                    "required": false,
+                    "order": 0
+                },
+                "target": {
+                    "data_type": "string",
+                    "description": "按目标 IP、资产或策略 ID 过滤",
+                    "required": false,
+                    "order": 1
+                },
+                "limit": {
+                    "data_type": "integer",
+                    "description": "返回数量",
+                    "required": false,
+                    "order": 2,
+                    "default_value": 50
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.code",
+                    "data_type": "integer",
+                    "description": "状态码"
+                },
+                {
+                    "data_path": "action_result.data.result",
+                    "data_type": "string",
+                    "description": "动作结果"
+                },
+                {
+                    "data_path": "action_result.data.records",
+                    "data_type": "jsonarray",
+                    "description": "记录列表"
+                },
+                {
+                    "data_path": "action_result.data.record",
+                    "data_type": "jsonobject",
+                    "description": "首条记录"
+                },
+                {
+                    "data_path": "action_result.data.total_count",
+                    "data_type": "integer",
+                    "description": "记录数量"
+                },
+                {
+                    "data_path": "action_result.data.operation",
+                    "data_type": "jsonobject",
+                    "description": "审计操作信息"
+                }
+            ]
+        }
+    ]
+}
